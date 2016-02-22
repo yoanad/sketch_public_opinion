@@ -46,7 +46,7 @@ void setup () {
                                           ).getInstance();      
   //listen to tweets in the stream 
   twitterStream.addListener(listener);
-  twitterStream.filter("syria");
+  twitterStream.filter("trump");
   
 
   //TwitterSearchAPI    
