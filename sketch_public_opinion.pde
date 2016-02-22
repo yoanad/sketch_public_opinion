@@ -20,6 +20,7 @@ Status status;
 TwitterStream twitterStream;
 Twitter twitter;
 Query query;
+String queryText = "syria";
 UnfoldingMap map;
 de.fhpotsdam.unfolding.geo.Location locTweet;
 de.fhpotsdam.unfolding.geo.Location locRetweet;
@@ -46,14 +47,15 @@ void setup () {
                                           ).getInstance();      
   //listen to tweets in the stream 
   twitterStream.addListener(listener);
-  twitterStream.filter("trump");
+  twitterStream.filter(queryText);
   
 
   //TwitterSearchAPI    
   Twitter twitter = new TwitterFactory (cb_search.build()).getInstance();
   //start search
   try{  
-    Query query = new Query ("syria");
+    Query query = new Query (queryText);
+    query.setSince("2016-22-02");
     result = twitter.search(query);
   }catch (TwitterException te){
     println("Can't find"+query);
