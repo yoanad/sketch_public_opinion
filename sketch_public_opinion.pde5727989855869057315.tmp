@@ -1,0 +1,136 @@
+import de.fhpotsdam.unfolding.*;
+import de.fhpotsdam.unfolding.geo.*;
+import de.fhpotsdam.unfolding.utils.*;
+import de.fhpotsdam.unfolding.marker.*;
+import de.fhpotsdam.unfolding.providers.*;
+import twitter4j.conf.*;
+import twitter4j.*;
+import twitter4j.auth.*;
+import twitter4j.api.*;
+import java.util.*;
+
+
+ConfigurationBuilder cb = new ConfigurationBuilder();
+Query queryForTwitter;
+FilterQuery keyword = new FilterQuery();
+Status status;
+TwitterStream twitterStream;
+UnfoldingMap map;
+de.fhpotsdam.unfolding.geo.Location loc;
+GeoLocation location;
+TweetsResources tweetsResources;
+SimplePointMarker marker;
+ArrayList<Long> statusIds = new ArrayList<Long>();
+
+
+void setup () {
+  //twitter authentication
+  cb.setOAuthConsumerKey("OXRFgb05gL9NNfIRn3x0NhVX3");
+  cb.setOAuthConsumerSecret("H2v8AOLfYYP6PcI1WCDJSxqZmAwtjQFhbBbtCTsGTPlHawXjns");
+  cb.setOAuthAccessToken("1827972638-jBZG9XR43ZG3YdBEa3BMfjZU2kx00bo4pNuD92B");
+  cb.setOAuthAccessTokenSecret("H0LRvCSlGs6CmG1UV6gqmaJE7fzwEFmM19IhBfS9JH3PR");
+  //start stream
+  TwitterStream twitterStream = new TwitterStreamFactory( cb.build()
+                                          ).getInstance();
+                                          
+  //listen to tweets in the stream 
+  twitterStream.addListener(listener);
+  
+  //filter tweets by location: USA
+  //keyword.locations(new double[][]{new double[]{-126.562500,30.448674},
+  //              new double[]{-61.171875,44.087585
+  //              }});
+                
+  //filter tweets by language: EN              
+  //keyword.language(new String[]{"en"});
+  
+  //execute actual filtering
+  twitterStream.filter("pizza");  
+  
+  //setup canvas
+  size(920,640, P2D);
+  background(0);
+  
+  //setup default map
+  map = new UnfoldingMap(this, new Google.GoogleMapProvider());
+  
+  //default map
+  MapUtils.createDefaultEventDispatcher(this,map);  
+}
+
+//awesome graphic visualisation is handled here
+void draw() {
+  background(0);
+  
+  //draw map
+  map.draw();
+  //drawTweets();
+  println(statusIds.size());
+  
+}
+
+public void checkRetweets(){
+  for ( int i=0; i< statusIds.size(); i++){
+    println(statusIds[i]);
+  }
+}
+
+//Anonymous class that implements the StatusListener interface
+StatusListener listener = new StatusListener() {
+  
+  //do something with the tweets
+  public void onStatus(Status status) {
+    //println("@" + status.getUser().getScreenName() + " - " + status.getText());
+    
+    //boolean geoEnabled = status.getUser().isGeoEnabled();
+    //if(geoEnabled == true){
+    //}
+    //println(status.getPlace());
+    //println(status.getGeoLocation());
+    
+    //get location of tweet and show it on the map
+    
+        
+    try {      
+      GeoLocation location = status.getGeoLocation();
+      de.fhpotsdam.unfolding.geo.Location loc = new de.fhpotsdam.unfolding.geo.Location(location.getLatitude(), location.getLongitude());
+      //add Id to list
+      statusIds.add(status.getId());
+      
+      //de.fhpotsdam.unfolding.geo.Location berlinLocation = new de.fhpotsdam.unfolding.geo.Location(52.5, 13.4);
+      SimplePointMarker marker = new SimplePointMarker(loc);
+      map.addMarkers(marker);             
+      //println(loc);
+    } catch(NullPointerException ne) {
+      //println("You broke the internet");
+    }
+    
+    
+    
+    
+    //marker.setColor(color(255, 0, 100));
+    //marker.setStrokeColor(color(255, 0, 0));
+    //marker.setStrokeWeight(4);
+ 
+  }
+  //Called upon location deletion messages.
+  public void onDeletionNotice (StatusDeletionNotice statusDeletionNotice) {
+    println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
+  }
+  //This notice will be sent each time a limited stream becomes unlimited.
+  public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+    println("Got track limitation notice:" + numberOfLimitedStatuses);
+  }
+  //Called upon location deletion messages.
+  public void onScrubGeo(long userId, long upToStatusId) {
+    println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
+  }
+  
+  public void onException(Exception ex) {
+    ex.printStackTrace();
+  }
+  //Called when receiving stall warnings.
+  public void onStallWarning(StallWarning warning) {
+   //TODO: BLABLA
+  }
+};

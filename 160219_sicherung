@@ -1,0 +1,85 @@
+import de.fhpotsdam.unfolding.*;
+import de.fhpotsdam.unfolding.geo.*;
+import de.fhpotsdam.unfolding.utils.*;
+import de.fhpotsdam.unfolding.providers.Microsoft;
+import twitter4j.conf.*;
+import twitter4j.*;
+import twitter4j.auth.*;
+import twitter4j.api.*;
+import java.util.*;
+
+ConfigurationBuilder cb = new ConfigurationBuilder();
+Query queryForTwitter;
+FilterQuery keyword = new FilterQuery();
+Status status;
+TwitterStream twitterStream;
+UnfoldingMap map;
+
+
+void setup () {
+  //twitter authentication
+  cb.setOAuthConsumerKey("OXRFgb05gL9NNfIRn3x0NhVX3");
+  cb.setOAuthConsumerSecret("H2v8AOLfYYP6PcI1WCDJSxqZmAwtjQFhbBbtCTsGTPlHawXjns");
+  cb.setOAuthAccessToken("1827972638-jBZG9XR43ZG3YdBEa3BMfjZU2kx00bo4pNuD92B");
+  cb.setOAuthAccessTokenSecret("H0LRvCSlGs6CmG1UV6gqmaJE7fzwEFmM19IhBfS9JH3PR");
+  //start stream
+  TwitterStream twitterStream = new TwitterStreamFactory( cb.build()
+                                          ).getInstance(); 
+  //listen to tweets in the stream                                        
+  twitterStream.addListener(listener);
+  //filter tweets by location: USA
+  keyword.locations(new double[][]{new double[]{-126.562500,30.448674},
+                new double[]{-61.171875,44.087585
+                }});
+  //filter tweets by language: EN              
+  keyword.language(new String[]{"en"});
+  //execute actual filtering
+  twitterStream.filter("Syria");  
+  
+  //setup canvas
+  size(920,640);
+  background(0);
+  
+  //setup default map
+  //map = new UnfoldingMap(this);
+  map = new UnfoldingMap(this, new Microsoft.AerialProvider());
+  //default map
+  MapUtils.createDefaultEventDispatcher(this,map);
+  
+}
+
+//awesome graphic visualisation is handled here
+void draw() {
+  background(0);
+  //draw map
+  map.draw();
+  //drawTweets();
+}
+
+//Anonymous class that implements the StatusListener interface
+StatusListener listener = new StatusListener() {
+  //do something with the tweets
+  public void onStatus(Status status) {
+    //println("@" + status.getUser().getScreenName() + " - " + status.getText());
+  }
+  //Called upon location deletion messages.
+  public void onDeletionNotice (StatusDeletionNotice statusDeletionNotice) {
+    println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
+  }
+  //This notice will be sent each time a limited stream becomes unlimited.
+  public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+    println("Got track limitation notice:" + numberOfLimitedStatuses);
+  }
+  //Called upon location deletion messages.
+  public void onScrubGeo(long userId, long upToStatusId) {
+    println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
+  }
+  
+  public void onException(Exception ex) {
+    ex.printStackTrace();
+  }
+  //Called when receiving stall warnings.
+  public void onStallWarning(StallWarning warning) {
+   //TODO: BLABLA
+  }
+};
