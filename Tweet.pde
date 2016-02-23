@@ -5,7 +5,7 @@ class Tweet {
   Tweet(Status status) {
     //make the Status object a Tweet
     tweet = status;
-    println(status.getId());
+    //println(status.getId());
   }
 
   void addToJson() {
