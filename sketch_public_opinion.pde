@@ -16,7 +16,6 @@ ConfigurationBuilder cb_search = new ConfigurationBuilder();
 Query queryForTwitter;
 FilterQuery keyword = new FilterQuery();
 QueryResult result;
-Status status;
 TwitterStream twitterStream;
 Twitter twitter;
 Query query;
@@ -28,7 +27,7 @@ de.fhpotsdam.unfolding.geo.Location locTweetSearch;
 double latitude, longitude; 
 GeoLocation location;
 TweetsResources tweetsResources;
-List <SimplePointMarker> simpleMarkerBuffer;
+List <StatusMarker> statusMarkerBuffer;
 List <SimpleLinesMarker> simpleLinesBuffer;
 
 SimpleLinesMarker linesMarker;
@@ -92,7 +91,7 @@ void setup () {
   MapUtils.createDefaultEventDispatcher(this,map);  
   
   //Setup buffer
-  simpleMarkerBuffer = new ArrayList<SimplePointMarker>();
+  statusMarkerBuffer = new ArrayList<StatusMarker>();
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
   
   int markerAlpha= 200;
@@ -104,8 +103,8 @@ void draw() {
   background(0);
    //searchTweetsAndGetLocation();
   //draw map
-  for (int i = 0; i < simpleMarkerBuffer.size(); i++){
-    map.addMarkers(simpleMarkerBuffer.get(i));
+  for (int i = 0; i < statusMarkerBuffer.size(); i++){
+    map.addMarkers(statusMarkerBuffer.get(i));
   }
   
   for (int i = 0; i < simpleLinesBuffer.size(); i++){
@@ -118,9 +117,10 @@ void draw() {
   }
   //searchTweetsAndGetLocation();
   map.draw();  
+  
 }
 
-public void searchTweetsAndGetLocation() {
+/*public void searchTweetsAndGetLocation() {
     List<Status> searchStatuses = result.getTweets();
     for (int i=0; i<searchStatuses.size(); i++) {           
         try {        
@@ -128,16 +128,13 @@ public void searchTweetsAndGetLocation() {
           color markerColorSearch = color(0,255,0);
           createMarkers(locTweetSearch.getLat(), locTweetSearch.getLon(), markerColorSearch);
                 
-        /*SimplePointMarker marker = new SimplePointMarker(locTweetSearch);
-        println("marker!!!");
-         marker.setColor(markerColorSearch);
-         map.addMarkers(marker);  */       
+          
         
         }catch (NullPointerException ne){
           println(ne + "Couldn't load Status");
         }
     }
-}
+}*/
 
   
 //Check Twitterstatus or if not available TwitterUser for Location
@@ -184,15 +181,32 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     return locTweet;
 }
 
+public void mouseClicked() {
+    StatusMarker hitMarker = (StatusMarker)map.getFirstHitMarker(mouseX, mouseY);
+    if (hitMarker != null) {
+        // Select current marker 
+        for (Marker marker : map.getMarkers()) {
+            marker.setSelected(false);
+        }
+        hitMarker.setSelected(true); 
+    } else {
+        // Deselect all other markers
+        for (Marker marker : map.getMarkers()) {
+            marker.setSelected(false);
+        }
+    }
+}
 
-public void createMarkers(double latitude, double longitude, color markerColor){
+
+
+public void createMarkers(double latitude, double longitude, color markerColor, Status status){
   if ((latitude != 0)&&(longitude !=0)){    
       de.fhpotsdam.unfolding.geo.Location loc = new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
-      SimplePointMarker marker = new SimplePointMarker(loc);      
+      StatusMarker marker = new StatusMarker(loc, status);      
       marker.setColor(markerColor);
-      marker.setStrokeWeight(0);
-      marker.setRadius(10);
-      simpleMarkerBuffer.add(marker);
+      marker.setStrokeWeight(0);      
+      marker.setRadius(10);      
+      statusMarkerBuffer.add(marker);
       //map.addMarkers(marker); 
       
      }
@@ -202,20 +216,23 @@ public void createMarkers(double latitude, double longitude, color markerColor){
 StatusListener listener = new StatusListener() {  
   //do something with the tweets
   public void onStatus(Status status) {    
-    de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
+    
     color markerColor = color(0,172, 237, 150);
+    if(statusMarkerBuffer.size() < 200){
+      de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
       if(status.getRetweetedStatus() != null){        
         de.fhpotsdam.unfolding.geo.Location locRetweet= getLocation(status.getRetweetedStatus());          
         if((locTweet.getLat() != 0)&&(locTweet.getLon() !=0) &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)){
           SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-          connectionMarker.setColor(markerColor);
+          connectionMarker.setColor(markerColor);          
           //connectionMarker.setStrokeWeight(10);
           simpleLinesBuffer.add(connectionMarker);        
         }
-    }    
+      }
+    }
     //add location on map
     ;
-    createMarkers(locTweet.getLat(), locTweet.getLon(), markerColor);
+    createMarkers(locTweet.getLat(), locTweet.getLon(), markerColor, status);
 
  
   }
