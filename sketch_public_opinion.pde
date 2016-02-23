@@ -111,14 +111,13 @@ void draw() {
     map.addMarkers(simpleLinesBuffer.get(i));
   }
   
-  for (Marker marker: map.getMarkers()){
-    //color colorMarker = color(0,172, 237, markerAlpha-1);
-    //marker.setColor(colorMarker);
-  }
+
   //searchTweetsAndGetLocation();
   map.draw();  
   
 }
+
+
 
 /*public void searchTweetsAndGetLocation() {
     List<Status> searchStatuses = result.getTweets();
@@ -163,7 +162,7 @@ public de.fhpotsdam.unfolding.geo.Location getLocation(Status status){
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){    
     try{
         println(googlePlace);
-        processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="+googlePlace+"&key=AIzaSyB9o0uNQT-rqXmvhccfB8F6H9rlii9vjS4");
+        processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
         processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
         processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
         processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
@@ -190,6 +189,24 @@ public void mouseClicked() {
         }
         hitMarker.setSelected(true); 
     } else {
+      de.fhpotsdam.unfolding.geo.Location userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(map.getLocationFromScreenPosition(mouseX, mouseY));        
+      SimplePointMarker userMarker = new SimplePointMarker(userMarkerLocation);
+      userMarker.setId("usermarker");      
+      for(Marker marker: map.getMarkers()){ 
+        try{
+          if (marker.getId() == "usermarker"){
+            userMarker.setLocation(userMarkerLocation);            
+          }
+        }catch(NullPointerException ne){
+          
+        }          
+      }
+      map.addMarkers(userMarker);
+      
+      
+          
+        
+        
         // Deselect all other markers
         for (Marker marker : map.getMarkers()) {
             marker.setSelected(false);

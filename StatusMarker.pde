@@ -16,6 +16,7 @@ public class StatusMarker extends SimplePointMarker{
   }
   
   public void draw(PGraphics pg, float x, float y){
+  this.setRadius(map(this.getStatus().getUser().getFollowersCount(), 0, 100000, 5, 100) );
     super.draw(pg, x, y);
     pg.pushStyle();    
     pg.fill(255,0,0);    
