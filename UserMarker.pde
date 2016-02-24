@@ -33,7 +33,4 @@ public class UserMarker extends SimplePointMarker{
     String nearbyTweets="";
     return nearbyTweets;
   }
-  
-
-  
 }

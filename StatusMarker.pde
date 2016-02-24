@@ -6,39 +6,26 @@ import twitter4j.auth.*;
 import twitter4j.api.*;
 
 public class StatusMarker extends SimplePointMarker{
-  Status status;
+  Tweet tweet;
   
   
-  public StatusMarker(Location location, Status status){
+  public StatusMarker(Location location, Tweet tweet){
     super(location);
-    this.status= status;
+    this.tweet= tweet;
     
   }
   
   public void draw(PGraphics pg, float x, float y){
-  this.setRadius(map(this.getStatus().getUser().getFollowersCount(), 0, 100000, 5, 30) );
+  this.setRadius(map(tweet.followersCount, 0, 100000, 5, 30) );
     super.draw(pg, x, y);
     pg.pushStyle();    
     pg.fill(255,0,0);    
     if(this.isSelected() == true){        
       pg.fill(0,0,0);
-      pg.text(this.getStatus().getUser().getName(), this.getScreenPosition(map).x, this.getScreenPosition(map).y -30, 100, 100);     
-      pg.text(this.getStatus().getText(), this.getScreenPosition(map).x, this.getScreenPosition(map).y, 100, 100);
-      //this.getStatus().getUser().
+      pg.text(tweet.username, this.getScreenPosition(map).x, this.getScreenPosition(map).y -30, 100, 100);     
+      pg.text(tweet.text, this.getScreenPosition(map).x, this.getScreenPosition(map).y, 100, 100);
+      //this.getTweet().getUser().
     }
     pg.popStyle();
   }
-  
-  public Status getStatus(){
-    return status;
-  }
-  
-  public void setStatus(Status status){
-    this.status= status;
-  }
-  
-  public void displayTweet(){
-    
-  }
-  
 }
