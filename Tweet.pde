@@ -62,7 +62,9 @@ class Tweet {
     tweets.setInt("followersCount", followersCount);
     tweetLocations.append(tweets);
     tweets.setJSONArray("retweets", retweets);
-    retweets.setLong(1, retweetedFrom);
+    if (isRetweet == true) {
+      retweets.setLong(0, retweetedFrom);
+    }
     saveJSONArray(tweetLocations, "data/data.json");
   }
 }
