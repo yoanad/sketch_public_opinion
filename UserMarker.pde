@@ -5,18 +5,18 @@ import twitter4j.*;
 import twitter4j.auth.*;
 import twitter4j.api.*;
 
-public class UserMarker extends SimplePointMarker{
+public class UserMarker extends SimplePointMarker {
   PImage img;
-  
-  
-  
-  public UserMarker(Location location){
+
+
+
+  public UserMarker(Location location) {
     super(location);    
     img=loadImage("pin_small_80px.png");
     this.setRadius(0);
   }
-  
-  public void draw(PGraphics pg, float x, float y){  
+
+  public void draw(PGraphics pg, float x, float y) {  
     super.draw(pg, x, y);
     pg.pushStyle();    
     //pg.noStroke();
@@ -28,24 +28,23 @@ public class UserMarker extends SimplePointMarker{
     pg.image(img, x, y);
     pg.popStyle();
   }
-  
-  public String getTextOfNearbyTweets(){   
- 
+
+  public String getTextOfNearbyTweets() {   
+    
     String nearbyTweets= "";    
-    for (Marker marker : statusMarkerManager.getMarkers()){
+    for (Marker marker : statusMarkerManager.getMarkers()) {
       StatusMarker statusMarker = (StatusMarker)marker;
       statusMarker.setColor(blueTwitter);
-      Double distance = this.getDistanceTo(statusMarker.getLocation());
-         
-        if(distance < 3000.0){          
+      de.fhpotsdam.unfolding.geo.Location markerLocation = new de.fhpotsdam.unfolding.geo.Location (statusMarker.tweet.latitude, statusMarker.tweet.longitude);
+      if (markerLocation != null) {
+        Double distance = this.getDistanceTo(markerLocation);
+        if (distance < 3000.0) {          
           statusMarker.setColor(orangeBright);          
           nearbyTweets += "";
-          nearbyTweets = statusMarker.getStatus().getText();
+          nearbyTweets = statusMarker.tweet.text;
         }
+      }
     }    
     return nearbyTweets;
   }
-  
-
-  
 }

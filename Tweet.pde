@@ -1,27 +1,62 @@
 class Tweet {
-  Status tweet;
+  //Status tweet;
   de.fhpotsdam.unfolding.geo.Location locations;
-  
+  double latitude;
+  double longitude;
+  long id;
+  String username;
+  String date;
+  String text;
+  int followersCount;
+
   Tweet(Status status) {
     //make the Status object a Tweet
-    tweet = status;
+    //tweet = status;
     //println(status.getId());
+    try {
+      latitude = status.getGeoLocation().getLatitude();
+      longitude = status.getGeoLocation().getLongitude();
+    } 
+    catch (Exception e) {
+      println("No location");
+    }
+    id = status.getId();
+    username = status.getUser().getScreenName();
+    date = hour()+ ";" +minute() + ";" + second();
+    text = status.getText();
+    followersCount = status.getUser().getFollowersCount();
   }
 
+  Tweet(processing.data.JSONObject tweetObj) {
+    id = tweetObj.getLong("id");
+    username = tweetObj.getString("username");
+    latitude = tweetObj.getDouble("latitude");
+    longitude = tweetObj.getDouble("longitude");
+    date  = tweetObj.getString("date");
+    text = tweetObj.getString("text");
+    followersCount = tweetObj.getInt("followersCount", 1);
+  }
+
+  String toString() {
+    return id + ": " + username;
+  }
+
+  //collects tweet data from stream and saves it in an JSONArray
   void addToJson() {
     processing.data.JSONObject locations = new processing.data.JSONObject();
     processing.data.JSONArray retweets = new processing.data.JSONArray();
-    double latitude = tweet.getGeoLocation().getLatitude();
-    double longitude = tweet.getGeoLocation().getLongitude();
-    locations.setLong("id", tweet.getId());
-    locations.setDouble("latitude",  latitude);
+
+    locations.setLong("id", id);
+    locations.setString("username", username);
+    locations.setDouble("latitude", latitude);
     locations.setDouble("longitude", longitude);
-    locations.setString("date",hour()+ ";" +minute() + ";" + second());
-    locations.setString("tweet", tweet.getText());
+    locations.setString("date", date);
+    locations.setString("text", text);
+    locations.setInt("followersCount", followersCount);
     tweetLocations.append(locations);
-      if (tweet.getRetweetedStatus() != null) {
-         locations.setJSONArray("retweets", retweets);
-      }
+    //if (tweet.getRetweetedStatus() != null) {
+    //   locations.setJSONArray("retweets", retweets);
+    //}
     saveJSONArray(tweetLocations, "data/data.json");
   }
 }
