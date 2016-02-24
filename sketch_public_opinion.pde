@@ -25,10 +25,12 @@ de.fhpotsdam.unfolding.geo.Location locTweet;
 de.fhpotsdam.unfolding.geo.Location locRetweet;
 double latitude, longitude; 
 
-//Markers
+//Buffer for Markers
 List <StatusMarker> statusMarkerBuffer;
 List <SimpleLinesMarker> simpleLinesBuffer;
 
+//Markers
+MarkerManager<Marker> userMarkerManager;
 SimpleLinesMarker linesMarker;
 int markerAlpha;
 
@@ -52,7 +54,7 @@ void setup () {
    
   //setup default map
   setupMap();
-  
+  userMarkerManager = map.getDefaultMarkerManager();
 }
 
 void draw() {
@@ -121,6 +123,9 @@ public void createMarkers(double latitude, double longitude, color markerColor, 
 
 public void mouseClicked() {
     StatusMarker hitMarker = (StatusMarker)map.getFirstHitMarker(mouseX, mouseY);
+    de.fhpotsdam.unfolding.geo.Location userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(map.getLocationFromScreenPosition(mouseX, mouseY));
+    UserMarker userMarker = new UserMarker(userMarkerLocation);
+    userMarker.setRadius(0);
     if (hitMarker != null) {
         // Select current marker 
         for (Marker marker : map.getMarkers()) {
@@ -128,23 +133,9 @@ public void mouseClicked() {
         }
         hitMarker.setSelected(true); 
     } else {
-      de.fhpotsdam.unfolding.geo.Location userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(map.getLocationFromScreenPosition(mouseX, mouseY));        
-      SimplePointMarker userMarker = new SimplePointMarker(userMarkerLocation);
-      userMarker.setId("usermarker");      
-      for(Marker marker: map.getMarkers()){ 
-        try{
-          if (marker.getId() == "usermarker"){
-            userMarker.setLocation(userMarkerLocation);            
-          }
-        }catch(NullPointerException ne){
-          
-        }          
-      }
-      map.addMarkers(userMarker);
-      
-      
-          
-        
+      userMarkerManager.clearMarkers();
+      userMarkerManager.addMarker(userMarker);
+      userMarker.getTextOfNearbyTweets(statusMarkerBuffer);
         
         // Deselect all other markers
         for (Marker marker : map.getMarkers()) {
@@ -191,7 +182,7 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     }
     catch (RuntimeException re){
       //if google finds no place according to the user's place information do this
-      println(re + "Google Api Key blocked");
+      println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
       locTweet= new de.fhpotsdam.unfolding.geo.Location(0, 0);
     }    
     return locTweet;
@@ -241,7 +232,7 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
       System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
     }
-  
+   //<>//
     //@Override
     public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
       System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);

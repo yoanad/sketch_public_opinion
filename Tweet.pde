@@ -7,7 +7,7 @@ class Tweet {
   Tweet(Status status) {
     //make the Status object a Tweet
     tweet = status;
-    println(status.getId());
+    //println(status.getId());
   }
   
   //collects tweet data from stream and saves it in an JSONArray
