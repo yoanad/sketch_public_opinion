@@ -8,6 +8,8 @@ class Tweet {
   String date;
   String text;
   int followersCount;
+  long retweetedFrom;
+  boolean isRetweet;
 
   Tweet(Status status) {
     //make the Status object a Tweet
@@ -25,6 +27,8 @@ class Tweet {
     date = hour()+ ";" +minute() + ";" + second();
     text = status.getText();
     followersCount = status.getUser().getFollowersCount();
+    retweetedFrom = status.getRetweetedStatus().getId();
+    isRetweet = status.isRetweet();
   }
 
   Tweet(processing.data.JSONObject tweetObj) {
@@ -35,28 +39,30 @@ class Tweet {
     date  = tweetObj.getString("date");
     text = tweetObj.getString("text");
     followersCount = tweetObj.getInt("followersCount", 1);
+    retweetedFrom = tweetObj.getLong("retweetedFrom");
+    isRetweet = tweetObj.getBoolean("isRetweet");
   }
 
   String toString() {
     return id + ": " + username;
   }
+  
 
   //collects tweet data from stream and saves it in an JSONArray
   void addToJson() {
-    processing.data.JSONObject locations = new processing.data.JSONObject();
+    processing.data.JSONObject tweets = new processing.data.JSONObject();
     processing.data.JSONArray retweets = new processing.data.JSONArray();
 
-    locations.setLong("id", id);
-    locations.setString("username", username);
-    locations.setDouble("latitude", latitude);
-    locations.setDouble("longitude", longitude);
-    locations.setString("date", date);
-    locations.setString("text", text);
-    locations.setInt("followersCount", followersCount);
-    tweetLocations.append(locations);
-    //if (tweet.getRetweetedStatus() != null) {
-    //   locations.setJSONArray("retweets", retweets);
-    //}
+    tweets.setLong("id", id);
+    tweets.setString("username", username);
+    tweets.setDouble("latitude", latitude);
+    tweets.setDouble("longitude", longitude);
+    tweets.setString("date", date);
+    tweets.setString("text", text);
+    tweets.setInt("followersCount", followersCount);
+    tweetLocations.append(tweets);
+    tweets.setJSONArray("retweets", retweets);
+    retweets.setLong(1, retweetedFrom);
     saveJSONArray(tweetLocations, "data/data.json");
   }
 }

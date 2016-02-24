@@ -57,7 +57,7 @@ void setup () {
   background(0);
 
   //setup default map
-  loadJson();
+  //loadJson();
   setupMap();
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
@@ -190,7 +190,14 @@ public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
   try {
     //println(googlePlace);
-    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
+    
+    //ANNA
+    //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    //+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
+    
+    //YOANA 
+    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
     processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
     processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
     processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
