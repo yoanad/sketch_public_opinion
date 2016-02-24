@@ -13,6 +13,7 @@ public class UserMarker extends SimplePointMarker{
   public UserMarker(Location location){
     super(location);    
     img=loadImage("pin_small_80px.png");
+    this.setRadius(0);
   }
   
   public void draw(PGraphics pg, float x, float y){  
@@ -28,9 +29,20 @@ public class UserMarker extends SimplePointMarker{
     pg.popStyle();
   }
   
-  public String getTextOfNearbyTweets(List <StatusMarker> statusMarkerBuffer){
-    map.getMarkers();
-    String nearbyTweets="";
+  public String getTextOfNearbyTweets(){   
+ 
+    String nearbyTweets= "";    
+    for (Marker marker : statusMarkerManager.getMarkers()){
+      StatusMarker statusMarker = (StatusMarker)marker;
+      statusMarker.setColor(blueTwitter);
+      Double distance = this.getDistanceTo(statusMarker.getLocation());
+         
+        if(distance < 3000.0){          
+          statusMarker.setColor(orangeBright);          
+          nearbyTweets += "";
+          nearbyTweets = statusMarker.getStatus().getText();
+        }
+    }    
     return nearbyTweets;
   }
   

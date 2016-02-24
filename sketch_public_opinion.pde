@@ -31,11 +31,17 @@ List <SimpleLinesMarker> simpleLinesBuffer;
 
 //Markers
 MarkerManager<Marker> userMarkerManager;
+MarkerManager<Marker> statusMarkerManager;
 SimpleLinesMarker linesMarker;
+UserMarker userMarker;
+Location userMarkerLocation;
 int markerAlpha;
 
 ArrayList<Tweet> tweets = new ArrayList();
 processing.data.JSONArray tweetLocations;
+
+//colors
+color orangeBright, blueTwitter, orangeDark;
 
 
 void setup () {
@@ -49,13 +55,23 @@ void setup () {
   statusMarkerBuffer = new ArrayList <StatusMarker>() ;
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
   
+  
+  
   //setup canvas
   size(800,580, P2D);
   background(0);
    
   //setup default map
   setupMap();
-  userMarkerManager = map.getDefaultMarkerManager();
+  userMarker = new UserMarker(userMarkerLocation);
+  userMarkerManager = new MarkerManager();
+  statusMarkerManager = new MarkerManager();
+  map.addMarkerManager(userMarkerManager);
+  map.addMarkerManager(statusMarkerManager);
+  
+  //colors
+  blueTwitter = color(0,172, 237, 150);
+  orangeBright = color(255,177, 5, 255);
 }
 
 void draw() {
@@ -63,7 +79,8 @@ void draw() {
   // Get the position of the img1 scrollbar
   // and convert to a value to display the img1 image 
   for (int i = 0; i < statusMarkerBuffer.size(); i++){
-    map.addMarkers(statusMarkerBuffer.get(i));
+    //map.addMarkers(statusMarkerBuffer.get(i));
+    statusMarkerManager.addMarker(statusMarkerBuffer.get(i));
   }
   
   for (int i = 0; i < simpleLinesBuffer.size(); i++){
@@ -117,32 +134,47 @@ public void createMarkers(double latitude, double longitude, color markerColor, 
       marker.setStrokeWeight(0);      
       marker.setRadius(10);      
       statusMarkerBuffer.add(marker);
-      //map.addMarkers(marker); 
+      userMarker.getTextOfNearbyTweets(); 
      }
 }
 
 public void mouseClicked() {
-    StatusMarker hitMarker = (StatusMarker)map.getFirstHitMarker(mouseX, mouseY);
-    de.fhpotsdam.unfolding.geo.Location userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(map.getLocationFromScreenPosition(mouseX, mouseY));
-    UserMarker userMarker = new UserMarker(userMarkerLocation);
-    userMarker.setRadius(0);
-    if (hitMarker != null) {
-        // Select current marker 
-        for (Marker marker : map.getMarkers()) {
-            marker.setSelected(false);
-        }
-        hitMarker.setSelected(true); 
-    } else {
+  
+  StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
+  //de.fhpotsdam.unfolding.geo.Location userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(map.getLocationFromScreenPosition(mouseX, mouseY));
+  //UserMarker userMarker = new UserMarker(userMarkerLocation);  
+  userMarkerLocation = map.getLocationFromScreenPosition(mouseX, mouseY);
+  userMarker.setLocation(userMarkerLocation);
+  if (hitMarker != null) {
+      // Select current marker 
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+          marker.setSelected(false);       
+      }
+      hitMarker.setSelected(true);  
+  }else{
+      //control UserMarker
       userMarkerManager.clearMarkers();
-      userMarkerManager.addMarker(userMarker);
-      userMarker.getTextOfNearbyTweets(statusMarkerBuffer);
-        
-        // Deselect all other markers
-        for (Marker marker : map.getMarkers()) {
-            marker.setSelected(false);
-        }
+      userMarkerManager.addMarker(userMarker); 
+      
+      String textNearby = userMarker.getTextOfNearbyTweets();
+      
+      println(textNearby);
+    //Deselect all other markers
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+      marker.setSelected(false);
     }
+  }
 }
+  
+
+    
+    
+        
+         
+
+
+
+
 
 //Check Twitterstatus or if not available TwitterUser for Location
 public de.fhpotsdam.unfolding.geo.Location getLocation(Status status){
@@ -182,7 +214,7 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     }
     catch (RuntimeException re){
       //if google finds no place according to the user's place information do this
-      println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
+      //println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
       locTweet= new de.fhpotsdam.unfolding.geo.Location(0, 0);
     }    
     return locTweet;
@@ -195,10 +227,10 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
   
     //@Override
     public void onStatus(Status status) {
-      color markerColor = color(0,172, 237, 150);
-       if(statusMarkerBuffer.size() < 20){
+      color markerColor = color(0,0, 237, 150);
+       if(statusMarkerBuffer.size() < 10){
         de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
-        createMarkers(locTweet.getLat(), locTweet.getLon(), markerColor, status);
+        createMarkers(locTweet.getLat(), locTweet.getLon(), blueTwitter, status);
         Tweet tweet =  new Tweet(status);
         tweets.add(tweet);
         //tweet.addToJson();
@@ -211,11 +243,11 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
             if((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
             &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)){
               SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-              connectionMarker.setColor(markerColor);          
+              connectionMarker.setColor(blueTwitter);          
               //connectionMarker.setStrokeWeight(10);
               simpleLinesBuffer.add(connectionMarker);        
-            } //<>//
-          }
+            }
+          } //<>//
        }
     }
 
