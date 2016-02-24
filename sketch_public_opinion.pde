@@ -39,9 +39,8 @@ processing.data.JSONArray tweetLocations;
 void setup () {
 
   // JSON
-  tweetLocations  = new processing.data.JSONArray();
-  //tweetLocations = loadJSONArray("data/data.json");
-  
+  //tweetLocations  = new processing.data.JSONArray();
+  tweetLocations = loadJSONArray("data/data.json");
   startStream();
   
   statusMarkerBuffer = new ArrayList <StatusMarker>() ;
@@ -53,6 +52,7 @@ void setup () {
    
   //setup default map
   setupMap();
+  
 }
 
 void draw() {
@@ -91,8 +91,9 @@ void startStream() {
   twitterStream.addListener(listener);
   String keywords[] = {"syria", "سوريا",
   "syrien", "siria", "Сирия", "Tanjung", "Syrie", "सीरिया", "叙利亚", "シリア"};
- // filter.language(new String[]{"en"});
-  filter.track(keywords);
+  String keywords1[] = {"#syria"};
+  filter.language(new String[]{"en"});
+  filter.track(keywords1);
   twitterStream.filter(filter);
  
   println("started stream");
@@ -177,7 +178,7 @@ public de.fhpotsdam.unfolding.geo.Location getLocation(Status status){
 //Look for Geoposition by using Google Search API
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){    
     try{
-        println(googlePlace);
+        //println(googlePlace);
         processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
         processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
         processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
@@ -196,21 +197,30 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     return locTweet;
 }
 
-
-
 // Implementing StatusListener interface
    StatusListener listener = new StatusListener() {
   
     //@Override
     public void onStatus(Status status) {
       color markerColor = color(0,172, 237, 150);
-       if(statusMarkerBuffer.size() < 20){
-        de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
-        createMarkers(locTweet.getLat(), locTweet.getLon(), markerColor, status);
+       if(statusMarkerBuffer.size() < 50){
         Tweet tweet =  new Tweet(status);
         tweets.add(tweet);
         //tweet.addToJson();
-        println(locTweet);
+        processing.data.JSONArray resultsArr = loadJSONArray("data/data.json");
+        for (int i =0; i < resultsArr.size(); i++) {
+          processing.data.JSONObject tweetObj = resultsArr.getJSONObject(i);
+          long id = tweetObj.getLong("id");
+          String name = tweetObj.getString("username");
+          double latitude = tweetObj.getDouble("latitude");
+          double longitude = tweetObj.getDouble("longitude");
+          String date  = tweetObj.getString("date");
+          String text = tweetObj.getString("text");
+          //println(id + name + latitude + longitude + date + text);
+        }
+        de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
+        createMarkers(locTweet.getLat(), locTweet.getLon(), markerColor, status);
+        //println(locTweet);
         //for lines must be improved
           if(status.getRetweetedStatus() != null){        
             de.fhpotsdam.unfolding.geo.Location locRetweet =
@@ -221,8 +231,8 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
               SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
               connectionMarker.setColor(markerColor);          
               //connectionMarker.setStrokeWeight(10);
-              simpleLinesBuffer.add(connectionMarker);        
-            } //<>//
+              simpleLinesBuffer.add(connectionMarker);         //<>//
+            }
           }
        }
     }
@@ -236,7 +246,6 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace){
     public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
       System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
     }
-  
     //@Override
     public void onScrubGeo(long userId, long upToStatusId) {
       System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
