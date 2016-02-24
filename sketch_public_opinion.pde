@@ -10,6 +10,12 @@ import twitter4j.api.*;
 import java.util.*;
 import java.net.URLEncoder;
 
+//States
+
+final int welcomeScreen = 0;
+final int visualisationScreen = 1;
+int state = welcomeScreen; //current
+
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
 FilterQuery filter = new FilterQuery();
@@ -53,6 +59,7 @@ void setup () {
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
 
   //setup canvas
+  //fullScreen(P2D, SPAN);
   size(800, 580, P2D);
   background(0);
 
@@ -71,7 +78,40 @@ void setup () {
 }
 
 void draw() {
-  background(0);
+
+  switch (state) {
+  case welcomeScreen:
+    showWelcomeScreen();
+    break;
+
+  case visualisationScreen:
+    showVisualisationScreen();
+    break;
+
+  default: 
+    println("You just broke the internet");
+    exit ();
+    break;
+  }
+}
+
+void showWelcomeScreen() {
+  background(11);
+  fill(244, 3, 3); // red 
+  text ("Put a pretty screen here", 210, 313);
+  rect(0, 0, 100, 100);
+  fill(255);
+  if (mousePressed) {
+    if (mouseX>0 && mouseX <0+100 && mouseY>0 && mouseY <0+100) {
+      println("The mouse is pressed and over the button");
+      fill(0);
+      state = visualisationScreen;
+    }
+  }
+}
+
+void showVisualisationScreen() {
+  background(255);
   map.draw();
   // Get the position of the img1 scrollbar
   // and convert to a value to display the img1 image 
@@ -82,7 +122,7 @@ void draw() {
   for (int i = 0; i < simpleLinesBuffer.size(); i++) {
     map.addMarkers(simpleLinesBuffer.get(i));
   }
-   // TODO: eventually seperate object and draw method for map ->> animation!
+  // TODO: eventually seperate object and draw method for map ->> animation!
 }
 
 void startStream() {
@@ -116,21 +156,22 @@ void startStream() {
 }
 
 void setupMap() {
-  map = new UnfoldingMap(this, new MapBox.WorldLightProvider());
+  map = new UnfoldingMap(this, 0, 0, width, height, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
+  //map.setTweening(false);
 }
 
 public void createMarkers(color markerColor, Tweet tweet) {
   if ((tweet.latitude != 0)&&(tweet.longitude !=0)) {    
     de.fhpotsdam.unfolding.geo.Location loc =
-    new de.fhpotsdam.unfolding.geo.Location(tweet.latitude, tweet.longitude);
+      new de.fhpotsdam.unfolding.geo.Location(tweet.latitude, tweet.longitude);
     StatusMarker marker = new StatusMarker(loc, tweet);      
     marker.setColor(markerColor);
     marker.setStrokeWeight(0);      
     marker.setRadius(10);      
     statusMarkerBuffer.add(marker);
-    if(userMarker != null){
+    if (userMarker != null) {
       userMarker.getTextOfNearbyTweets();
     }
   }
@@ -190,14 +231,14 @@ public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
   try {
     //println(googlePlace);
-    
+
     //ANNA
     //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
     //+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
-    
+
     //YOANA 
     processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
-    +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
+      +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
     processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
     processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
     processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
@@ -239,7 +280,7 @@ StatusListener listener = new StatusListener() {
       tweet.latitude=locTweet.getLat();
       tweets.add(tweet);
       tweet.addToJson();
-      
+
       createMarkers(blueTwitter, tweet);
       //println(locTweet);
       //for lines must be improved
