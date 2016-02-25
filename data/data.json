@@ -1,42 +1,10 @@
-[
-  {
-    "date": "17;39;58",
-    "latitude": 31.046051025390625,
-    "id": 702533430932807681,
-    "text": "RT @Conflicts: TURKEY: Military reportedly deploys ATILGAN Pedestal Mounted Stinger System to border  with #Syria. - @metesohtaoglu\nhttps:/\u2026",
-    "followersCount": 65,
-    "retweets": [702179982852882437],
-    "username": "NatanDublin",
-    "longitude": 34.85161209106445
-  },
-  {
-    "date": "17;40;0",
-    "latitude": 48.85661315917969,
-    "id": 702533439589748736,
-    "text": "RT @mod_russia: #SYRIA for 2 days, Rus aircraft performed 62 sorties engaging 187 targets in #Hama, #Raqqah, Deir ez-Zor, #Aleppo and #Homs",
-    "followersCount": 327,
-    "retweets": [702533265127809024],
-    "username": "jeanpolochon",
-    "longitude": 2.352221965789795
-  },
-  {
-    "date": "17;40;1",
-    "latitude": 0,
-    "id": 702533445055078400,
-    "text": "RT @mod_russia: #SYRIA Rus-US ceasefire agreement isn't applied to organization determined by the @UN as terrorist ones",
-    "followersCount": 1298,
-    "retweets": [702532933723275265],
-    "username": "GrebSG",
-    "longitude": 0
-  },
-  {
-    "date": "17;40;2",
-    "latitude": 37.090240478515625,
-    "id": 702533448368570369,
-    "text": "RT @MaksCzuperski: Open source allows us to debunk lies. Stay tuned as we are readying our next big report on #PutinAtWar in #Syria https:/\u2026",
-    "followersCount": 614,
-    "retweets": [702532343546908673],
-    "username": "galynar",
-    "longitude": -95.712890625
-  }
-]
+[{
+  "date": "14;40;25",
+  "latitude": 4.210484027862549,
+  "id": 702850635733962752,
+  "text": "RT @AEJKhalil: #SAA helicopters dropped barrel bombs over #Teir_Maela \n#Homs cs #Syria FEB 25 https://t.co/lDWz9FquDY",
+  "followersCount": 6259,
+  "retweets": [702849866121256960],
+  "username": "HassanSalehin",
+  "longitude": 101.97576904296875
+}]
