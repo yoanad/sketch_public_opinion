@@ -14,11 +14,14 @@ class Range{
     textColorBright = color(211, 211, 211);
   }
   
+  public void draw(){}
+  
 
   
-  public void drawScore(int x, int y, int w, int h){
+  public void drawRange(int x, int y, int w, int h){
   //Text
   fill(textColor);
+  textAlign(CENTER);
   text(name, x, y);
   
   //BackgroundRect
@@ -28,7 +31,7 @@ class Range{
   rect(x,y+10,w,h);
   
   //Rect of Score
-  fill(scoreColor,100);
+  fill(scoreColor, 100);
   noStroke();
   rect(x, y+10, map(score, 0, 1 , 0, w), h);
   
@@ -45,5 +48,13 @@ class Range{
   rect(x,y+10,w,h);
   
   }  
+  
+  public void setScore(Float score){
+    this.score = score;
+  }
+  
+  public void setColor(color scoreColor){
+    this.scoreColor = scoreColor;
+  }
   
 }

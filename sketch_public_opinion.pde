@@ -68,14 +68,30 @@ processing.data.JSONArray tweetLocations;
 
 //colors
 color orangeBright, blueTwitter, orangeDark;
+//color colorAnger, colorDisgust, colorFear, colorJoy, colorSadness;
+color colorAnger = color(255, 177, 5, 255);
+color colorDisgust = color(0, 177, 5, 255);
+color colorFear= color(255, 0, 5, 255);
+color colorJoy = color(255, 177, 2555, 255);
+color colorSadness= color(255, 255, 5, 255);
 
 //watson
-processing.data.JSONObject tweetTone;
-processing.data.JSONObject tweetSentiment;
+processing.data.JSONObject tweetTone= new processing.data.JSONObject();
+processing.data.JSONObject tweetSentiment= new processing.data.JSONObject(); 
+
+//Visualisation of Watson
+HashMap<String,Float> hmEmotions = new HashMap<String, Float>();
+ArrayList<Range> ranges = new ArrayList();
+Range rangeAnger = new Range("Anger", 0.0, colorAnger);
+Range rangeDisgust = new Range("Disgust", 0.0, colorDisgust);
+Range rangeFear = new Range("Fear", 0.0, colorFear);
+Range rangeJoy = new Range("Joy", 0.0, colorJoy);
+Range rangeSadness = new Range("Sadness", 0.0, colorSadness);
+
 
 
 void setup () {
-
+    
   //Styling 
   cp5 = new ControlP5(this);
   font = createFont("Raleway-Light-48.vlw", 30);
@@ -87,6 +103,7 @@ void setup () {
 
   statusMarkerBuffer = new ArrayList <StatusMarker>() ;
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
+
 
   //setup canvas
   //fullScreen(P2D, SPAN);
@@ -103,10 +120,15 @@ void setup () {
   blueTwitter = color(0, 172, 237, 150);
   orangeBright = color(255, 177, 5, 255);
 
-  //Watson example
-  textNearby = null;
-  processing.data.JSONObject tweetTone= new processing.data.JSONObject();
-  processing.data.JSONObject tweetSentiment= new processing.data.JSONObject();
+  
+  //Ranges
+  ranges.add(rangeAnger);
+  ranges.add(rangeDisgust);
+  ranges.add(rangeFear);
+  ranges.add(rangeJoy);
+  ranges.add(rangeSadness);
+
+
 }
 
 void draw() {
@@ -161,7 +183,61 @@ void showVisualisationScreen() {
 
   for (int i = 0; i < simpleLinesBuffer.size(); i++) {
     map.addMarkers(simpleLinesBuffer.get(i));
+  }  
+  drawSentiments();
+}
+
+public void drawSentiments(){
+  //Draw Emotion Ranges
+  
+  for(int i= 0; i<ranges.size(); i++){    
+    translate(0, 100);
+    ranges.get(i).drawRange(0, 0, 200, 80);    
   }
+  
+    
+  
+  
+  try{
+    if (hmEmotions.get("Anger") != null){      
+      rangeAnger.setScore(hmEmotions.get("Anger"));      
+      rangeDisgust.setScore(hmEmotions.get("Disgust"));       
+      rangeFear.setScore(hmEmotions.get("Fear"));
+      rangeFear.setScore(hmEmotions.get("Joy"));
+      rangeFear.setScore(hmEmotions.get("Sadness"));
+    }
+    
+    
+  }catch(NullPointerException ne){
+  
+  }
+}
+
+public void saveSentiments(){
+  
+  //Range range1 = new Range("hallo", 0.7, blueTwitter);
+  //read JSON Object
+  try{
+    processing.data.JSONArray emotions = tweetTone.getJSONArray("tone_categories").getJSONObject(0).getJSONArray("tones");
+    
+    for(int i=0; i< emotions.size(); i++){
+      String name= emotions.getJSONObject(i).getString("tone_name");
+      //println(emotions.getJSONObject(i).getString("tone_name"));
+      Float score = emotions.getJSONObject(i).getFloat("score");
+      //println(score);
+      if(score != null){
+        hmEmotions.put(name,score);
+      }
+      
+    }   
+  }catch(NullPointerException ne){
+   println("Array empty");
+  }
+    
+
+  
+  //println(textNearby);
+  //println(tweetTone);
 }
 
 //Watson example
@@ -171,10 +247,10 @@ void analyzeTone(String text) {
   //Username und Passwort das Ihr von der Watson Konsole kriegt
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");   
    ToneAnalysis tone = service.getTone(text);  
-   processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
-   println(tweetTone);   
+   tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
+   //println(tweetTone);    
 }
-
+/*
 void analyzeSentiment(String text) {
   //Sentiment Analysis
   AlchemyLanguage service = new AlchemyLanguage();
@@ -188,7 +264,7 @@ void analyzeSentiment(String text) {
    processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
    println(tweetSentiment);
    }
-}
+}*/
 
 void startStream() {
   //TWITTER CREDENTIALS
@@ -249,8 +325,7 @@ public void createMarkers(color markerColor, Tweet tweet) {
   }
 }
 
-public void mousePressed() {
- 
+public void mousePressed() {   
   if (state==1) {
     StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
     userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
@@ -264,30 +339,31 @@ public void mousePressed() {
     } else {
       //control UserMarker
       userMarkerManager.clearMarkers();
-      userMarkerManager.addMarker(userMarker); 
+      userMarkerManager.addMarker(userMarker);   
       
-      textNearby =userMarker.getTextOfNearbyTweets();
-
-      //analyze Text with watson      
-      println("textNearby ist: "+textNearby);
+      //analyze Text with watson  
+      textNearby =userMarker.getTextOfNearbyTweets();         
+      println("textNearby ist: "+textNearby);      
       if ((textNearby !=null)&&(textNearby !="")){
         Runnable run = new Runnable() {
           public void run() {
             analyzeTone(textNearby);
-            analyzeSentiment(textNearby);
-          }
-        };  
+            //analyzeSentiment(textNearby);
+            saveSentiments(); 
+            }
+          };  
         new Thread(run).start();
+         
       }
-
+      
       //Deselect all other markers
       for (Marker marker : statusMarkerManager.getMarkers()) {
         marker.setSelected(false);
       }
     }
   }
-  
-  }
+}
+
 
   //Check Twitterstatus or if not available TwitterUser for Location
   public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
@@ -368,6 +444,8 @@ public void mousePressed() {
 
         createMarkers(blueTwitter, tweet);
         //println(locTweet);
+        
+        
         //for lines must be improved
         if (status.getRetweetedStatus() != null) {        
           de.fhpotsdam.unfolding.geo.Location locRetweet =
