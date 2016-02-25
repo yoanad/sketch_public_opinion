@@ -21,6 +21,12 @@ import com.squareup.okhttp.*;
 import okio.*;
 
 
+//States
+
+final int welcomeScreen = 0;
+final int visualisationScreen = 1;
+int state = welcomeScreen; //current
+
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
 FilterQuery filter = new FilterQuery();
@@ -72,12 +78,13 @@ void setup () {
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
 
   //setup canvas
+  //fullScreen(P2D, SPAN);
   size(800, 580, P2D);
   //fullScreen();
   background(0);
 
   //setup default map
-  loadJson();
+  //loadJson();
   setupMap();
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
@@ -99,7 +106,40 @@ void setup () {
 }
 
 void draw() {
-  background(0);
+
+  switch (state) {
+  case welcomeScreen:
+    showWelcomeScreen();
+    break;
+
+  case visualisationScreen:
+    showVisualisationScreen();
+    break;
+
+  default: 
+    println("You just broke the internet");
+    exit ();
+    break;
+  }
+}
+
+void showWelcomeScreen() {
+  background(255);
+  fill(244, 3, 3); // red 
+  text ("Put a pretty screen here", 210, 313);
+  rect(width/2, height/2, 400, 100);
+  fill(255);
+  if (mousePressed) {
+    if (mouseX>width/2 && mouseX <width/2+400 && mouseY>height/2 && mouseY <height/2+100) {
+      println("The mouse is pressed and over the button");
+      fill(0);
+      state = visualisationScreen;
+    }
+  }
+}
+
+void showVisualisationScreen() {
+  background(255);
   map.draw();
   // Get the position of the img1 scrollbar
   // and convert to a value to display the img1 image 
@@ -120,11 +160,11 @@ void analyzeTone(String text) {
   ToneAnalyzer service = new ToneAnalyzer(ToneAnalyzer.VERSION_DATE_2016_02_11);
   //Username und Passwort das Ihr von der Watson Konsole kriegt
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");
-  if (text!= null){
+  /*if (text!= null){
     ToneAnalysis tone = service.getTone(text);  
     processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
     println(tweetTone);
-  }
+  }*/
 }
 
 void analyzeSentiment(String text) {
@@ -132,13 +172,14 @@ void analyzeSentiment(String text) {
   AlchemyLanguage service = new AlchemyLanguage();
   //API Key der Alchemy API
   service.setApiKey("54ec2b46d89ff069c95cd243a4e3ce7dfebfaaaa");
+  /*
   if (text != null){
     HashMap<String, Object> params = new HashMap<String, Object>();
     params.put(AlchemyLanguage.TEXT, text);
     DocumentSentiment sentiment =  service.getSentiment(params);
     processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
     println(tweetSentiment);
-  }
+  }*/
 }
 
 void startStream() {
@@ -172,15 +213,16 @@ void startStream() {
 }
 
 void setupMap() {
-  map = new UnfoldingMap(this, new MapBox.WorldLightProvider());
+  map = new UnfoldingMap(this, 0, 0, width, height, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
+  //map.setTweening(false);
 }
 
 public void createMarkers(color markerColor, Tweet tweet) {
   if ((tweet.latitude != 0)&&(tweet.longitude !=0)) {    
     de.fhpotsdam.unfolding.geo.Location loc =
-    new de.fhpotsdam.unfolding.geo.Location(tweet.latitude, tweet.longitude);
+      new de.fhpotsdam.unfolding.geo.Location(tweet.latitude, tweet.longitude);
     StatusMarker marker = new StatusMarker(loc, tweet);      
     marker.setColor(markerColor);
     marker.setStrokeWeight(0);      
@@ -255,7 +297,14 @@ public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
   try {
     //println(googlePlace);
-    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
+
+    //ANNA
+    //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    //+googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
+
+    //YOANA 
+    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+      +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
     processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
     processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
     processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
@@ -297,7 +346,7 @@ StatusListener listener = new StatusListener() {
       tweet.latitude=locTweet.getLat();
       tweets.add(tweet);
       tweet.addToJson();
-      
+
       createMarkers(blueTwitter, tweet);
       //println(locTweet);
       //for lines must be improved
