@@ -1,4 +1,4 @@
-import de.fhpotsdam.unfolding.*;  //<>//
+import de.fhpotsdam.unfolding.*;  //<>// //<>//
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.utils.*;
 import de.fhpotsdam.unfolding.marker.*;
@@ -110,7 +110,7 @@ void setup () {
 
   //Styling 
   cp5 = new ControlP5(this);
-  createButton(blueTwitter,"blabla",14,2,4,4);
+  //createButton(blueTwitter,"blabla",14,2,4,4);
   //startButton = cp5.addButton("Start visualisation");
 
   // JSON
@@ -124,9 +124,6 @@ void setup () {
   //setup canvas
   //fullScreen(P2D, SPAN);
   size(1920, 1080, P2D);
-  //canvas = createGraphics(640, 480, JAVA2D);
-  //size(displayWidth, displayHeight, P3D);
-  //fullScreen();
   background(0);
 
   //setup default map
@@ -186,10 +183,10 @@ void controlEvent(ControlEvent theEvent) {
 
   if (theEvent.isGroup()) {
     // check if the Event was triggered from a ControlGroup
-    println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
+    //println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
     //runMode = int(theEvent.getGroup().getValue() + 1);
   } else if (theEvent.isController()) {
-    println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
+    //println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
   }
 }
 
@@ -221,16 +218,18 @@ void showWelcomeScreen() {
   fill(blueTwitter);
   font = createFont("Raleway-Light-48.vlw", 40);
   textFont(font);
+  pushStyle();
   text ("How does public opinion change around the world?", 
     width/2, height/2-100);
   textAlign(CENTER);
+  popStyle();
   //button.Button();
   //button.
-  //button.createButton(width/2-200, height/2-50, 400, 100);
+  //createButton(""width/2-200, height/2-50, 400, 100);
   //rect(width/2-200, height/2-50, 400, 100);
   
   //cp5.addButton("Start visualisation")
-   createButton(blueTwitter,"blabla",width/2-200,height/2-50,400,100);
+   createButton(blueTwitter,"Start visualisation",width/2-200,height/2-50,400,100, 30);
  
   //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
   //  .setColorBackground(blueTwitter).loadFont("Raleway-Light", 20);
@@ -263,8 +262,8 @@ public void drawSentiments() {
   //Draw Emotion Ranges
 
   for (int i= 0; i<ranges.size(); i++) {    
-    translate(0, 100);
-    ranges.get(i).drawRange(0, 0, 200, 80);
+    translate(0, 150);
+    ranges.get(i).drawRange(1600, 0, 200, 80);
   }
 
 
@@ -310,18 +309,13 @@ public void saveSentiments() {
 void drawSettingsMenu() {
   font = createFont("Raleway-Light-48.vlw", 30);
   //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
-  settingsDropdown = cp5.addDropdownList("Settings")
-    .setPosition(10, 10);
-  settingsDropdown.addItem("Menuitem", 1);
-  settingsDropdown.addItem("Menuitem", 2);
-  settingsDropdown.setValue(2);
-  settingsDropdown.setColorBackground(blueTwitter);
-  this.settingsDropdown.setItemHeight(40);
-
-
-
-
-
+  //settingsDropdown = cp5.addDropdownList("Settings")
+  //  .setPosition(10, 10);
+  //settingsDropdown.addItem("Menuitem", 1);
+  //settingsDropdown.addItem("Menuitem", 2);
+  //settingsDropdown.setValue(2);
+  //settingsDropdown.setColorBackground(blueTwitter);
+  //this.settingsDropdown.setItemHeight(40);
 
   //cp5.addButton("hamburger")
   //  .setPosition(10, 10)
@@ -332,8 +326,8 @@ void drawSettingsMenu() {
 
 void drawMenuRight() {
   fill(255);
+  stroke(153);
   rect(1280, 0, 640, displayHeight);
-
 }
 
 //Watson example
@@ -386,7 +380,6 @@ void startStream() {
   twitterStream.addListener(listener);
   String keywords[] = {"syria", "سوريا", 
     "syrien", "siria", "Сирия", "Tanjung", "Syrie", "सीरिया", "叙利亚", "シリア"};
-  String keywords1[] = {"#syria"};
   //filter.language(new String[]{"en"});
   filter.track(keywords);
   twitterStream.filter(filter);
@@ -399,7 +392,6 @@ void setupMap() {
   map = new UnfoldingMap(this, (-200), 0, displayWidth-200, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
-  //map.setTweening(false);
   //userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(48.1448, 11.558);
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
