@@ -40,6 +40,7 @@ int state = welcomeScreen; //current
 ControlP5 cp5;
 PFont font;
 Button startButton;
+Button button;
 DropdownList settingsDropdown;
 
 //Map Constraints
@@ -92,7 +93,8 @@ void setup () {
 
   //Styling 
   cp5 = new ControlP5(this);
-  startButton = cp5.addButton("Start visualisation");
+  createButton(blueTwitter,"blabla",14,2,4,4);
+  //startButton = cp5.addButton("Start visualisation");
 
   // JSON
   tweetLocations  = new processing.data.JSONArray();
@@ -201,9 +203,16 @@ void showWelcomeScreen() {
   text ("How does public opinion change around the world?", 
     width/2, height/2-100);
   textAlign(CENTER);
-  cp5.addButton("Start visualisation")
-    .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
-    .setColorBackground(blueTwitter);
+  //button.Button();
+  //button.
+  //button.createButton(width/2-200, height/2-50, 400, 100);
+  //rect(width/2-200, height/2-50, 400, 100);
+  
+  //cp5.addButton("Start visualisation")
+   createButton(blueTwitter,"blabla",width/2-200,height/2-50,400,100);
+ 
+  //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
+  //  .setColorBackground(blueTwitter).loadFont("Raleway-Light", 20);
   fill(4, 193, 192);
   if (mousePressed) {
     if (mouseX > width/2-200 && mouseX < width/2-200+400 && mouseY>height/2-50 && mouseY <height/2-50+100) {
