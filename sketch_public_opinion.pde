@@ -9,12 +9,17 @@ import twitter4j.auth.*;
 import twitter4j.api.*;
 import java.util.*;
 import java.net.URLEncoder;
+import controlP5.*;
 
 //States
 
 final int welcomeScreen = 0;
 final int visualisationScreen = 1;
 int state = welcomeScreen; //current
+
+//Styling
+ControlP5 cp5;
+PFont font;
 
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -50,6 +55,9 @@ color orangeBright, blueTwitter, orangeDark;
 
 
 void setup () {
+  //Styling 
+  cp5 = new ControlP5(this);
+  font = createFont("Raleway-Light-48.vlw",30);
 
   // JSON
   tweetLocations  = new processing.data.JSONArray();
@@ -97,15 +105,22 @@ void draw() {
 
 void showWelcomeScreen() {
   background(255);
-  fill(244, 3, 3); // red 
-  text ("Put a pretty screen here", 210, 313);
-  rect(width/2, height/2, 400, 100);
-  fill(255);
+  fill(4,193,192);
+  textFont(font);
+  text ("How does public opinion change around the world?",
+  width/2, height/2-100);
+  textAlign(CENTER);
+  cp5.addButton("Start visualisation")
+  .setPosition(width/2-200,height/2-50).setSize(400,100);
+  //cp5.getController("Start visualisation").setFont(font);
+  //rect(width/2-200, height/2-50, 400, 100);
+  fill(4,193,192);
   if (mousePressed) {
-    if (mouseX>width/2 && mouseX <width/2+400 && mouseY>height/2 && mouseY <height/2+100) {
+    if (mouseX > width/2-200 && mouseX < width/2-200+400 && mouseY>height/2-50 && mouseY <height/2-50+100) {
       println("The mouse is pressed and over the button");
       fill(0);
       state = visualisationScreen;
+      cp5.remove("Start visualisation");
     }
   }
 }
