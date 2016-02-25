@@ -1,8 +1,14 @@
-import de.fhpotsdam.unfolding.*; //<>// //<>// //<>//
+import de.fhpotsdam.unfolding.*; //<>// //<>// //<>// //<>//
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.utils.*;
 import de.fhpotsdam.unfolding.marker.*;
 import de.fhpotsdam.unfolding.providers.*;
+import de.fhpotsdam.unfolding.UnfoldingMap;
+import de.fhpotsdam.unfolding.events.MapEvent;
+import de.fhpotsdam.unfolding.geo.Location;
+import de.fhpotsdam.unfolding.utils.MapUtils;
+import de.fhpotsdam.unfolding.utils.ScreenPosition;
+
 import twitter4j.conf.*;
 import twitter4j.*;
 import twitter4j.auth.*;
@@ -33,6 +39,12 @@ int state = welcomeScreen; //current
 //Styling
 ControlP5 cp5;
 PFont font;
+
+//Map Constraints
+Location boundTopLeft = new Location(52.8, 12.6);
+Location boundBottomRight = new Location(52.0, 14.5);
+//Location boundTopLeft = new Location(-180, -90);
+//Location boundBottomRight = new Location(180, 90);
 
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -78,7 +90,8 @@ void setup () {
 
   //Styling 
   cp5 = new ControlP5(this);
-  font = createFont("Raleway-Light-48.vlw",30);
+  Button startButton = cp5.addButton("Start visualisation");
+  font = createFont("Raleway-Light-48.vlw", 30);
 
 
   // JSON
@@ -90,13 +103,17 @@ void setup () {
 
   //setup canvas
   //fullScreen(P2D, SPAN);
-  size(800, 580, P2D);
+  size(1920, 1080, P2D);
+  //canvas = createGraphics(640, 480, JAVA2D);
+  //size(displayWidth, displayHeight, P3D);
   //fullScreen();
   background(0);
 
   //setup default map
   //loadJson();
   setupMap();
+  map.setZoomRange(10, 12);
+  //map.zoomAndPanTo(new Location(52.5, 13.4f), 10);
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
   statusMarkerManager = new MarkerManager();
@@ -106,14 +123,11 @@ void setup () {
   //colors
   blueTwitter = color(0, 172, 237, 150);
   orangeBright = color(255, 177, 5, 255);
-  
+
   //Watson example
   textNearby = "";
   processing.data.JSONObject tweetTone= new processing.data.JSONObject();
   processing.data.JSONObject tweetSentiment= new processing.data.JSONObject();
-  
- 
-
 }
 
 void draw() {
@@ -124,6 +138,10 @@ void draw() {
     break;
 
   case visualisationScreen:
+    background(255);
+    //restrictPanning();
+    //map.setOffset(0,0);
+    map.draw();
     showVisualisationScreen();
     break;
 
@@ -134,18 +152,44 @@ void draw() {
   }
 }
 
+
+
+
+
+public void restrictPanning() {
+  Location mapTopLeft = map.getTopLeftBorder();
+  Location mapBottomRight = map.getBottomRightBorder();
+  ScreenPosition mapTopLeftPos = map.getScreenPosition(mapTopLeft);
+  ScreenPosition boundTopLeftPos = map.getScreenPosition(boundTopLeft);
+  if (boundTopLeft.getLon() > mapTopLeft.getLon()) {
+    map.panBy(mapTopLeftPos.x - boundTopLeftPos.x, 0);
+  }
+  if (boundTopLeft.getLat() < mapTopLeft.getLat()) {
+    map.panBy(0, mapTopLeftPos.y - boundTopLeftPos.y);
+  }
+  ScreenPosition mapBottomRightPos = map.getScreenPosition(mapBottomRight);
+  ScreenPosition boundBottomRightPos = map.getScreenPosition(boundBottomRight);
+  if (boundBottomRight.getLon() < mapBottomRight.getLon()) {
+    map.panBy(mapBottomRightPos.x - boundBottomRightPos.x, 0);
+  }
+  if (boundBottomRight.getLat() > mapBottomRight.getLat()) {
+    map.panBy(0, mapBottomRightPos.y - boundBottomRightPos.y);
+  }
+}
+
+
 void showWelcomeScreen() {
   background(255);
-  fill(4,193,192);
+  fill(4, 193, 192);
   textFont(font);
-  text ("How does public opinion change around the world?",
-  width/2, height/2-100);
+  text ("How does public opinion change around the world?", 
+    width/2, height/2-100);
   textAlign(CENTER);
   cp5.addButton("Start visualisation")
-  .setPosition(width/2-200,height/2-50).setSize(400,100);
+    .setPosition(width/2-200, height/2-50).setSize(400, 100);
   //cp5.getController("Start visualisation").setFont(font);
   //rect(width/2-200, height/2-50, 400, 100);
-  fill(4,193,192);
+  fill(4, 193, 192);
   if (mousePressed) {
     if (mouseX > width/2-200 && mouseX < width/2-200+400 && mouseY>height/2-50 && mouseY <height/2-50+100) {
       println("The mouse is pressed and over the button");
@@ -157,11 +201,9 @@ void showWelcomeScreen() {
 }
 
 void showVisualisationScreen() {
-  background(255);
-  map.draw();
   // Get the position of the img1 scrollbar
   // and convert to a value to display the img1 image 
-  
+
   for (int i = 0; i < statusMarkerBuffer.size(); i++) {   
     statusMarkerManager.addMarker(statusMarkerBuffer.get(i));
   }
@@ -169,7 +211,14 @@ void showVisualisationScreen() {
   for (int i = 0; i < simpleLinesBuffer.size(); i++) {
     map.addMarkers(simpleLinesBuffer.get(i));
   }
-  
+  drawMenuRight();
+}
+
+void drawMenuRight() {
+   fill(255);
+   rect(400, 0, 400, displayHeight);
+   //map = new UnfoldingMap(this, (-200), 0, displayWidth-200, displayHeight-10, new MapBox.WorldLightProvider());
+ 
 }
 
 //Watson example
@@ -179,10 +228,10 @@ void analyzeTone(String text) {
   //Username und Passwort das Ihr von der Watson Konsole kriegt
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");
   /*if (text!= null){
-    ToneAnalysis tone = service.getTone(text);  
-    processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
-    println(tweetTone);
-  }*/
+   ToneAnalysis tone = service.getTone(text);  
+   processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
+   println(tweetTone);
+   }*/
 }
 
 void analyzeSentiment(String text) {
@@ -192,12 +241,12 @@ void analyzeSentiment(String text) {
   service.setApiKey("54ec2b46d89ff069c95cd243a4e3ce7dfebfaaaa");
   /*
   if (text != null){
-    HashMap<String, Object> params = new HashMap<String, Object>();
-    params.put(AlchemyLanguage.TEXT, text);
-    DocumentSentiment sentiment =  service.getSentiment(params);
-    processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
-    println(tweetSentiment);
-  }*/
+   HashMap<String, Object> params = new HashMap<String, Object>();
+   params.put(AlchemyLanguage.TEXT, text);
+   DocumentSentiment sentiment =  service.getSentiment(params);
+   processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
+   println(tweetSentiment);
+   }*/
 }
 
 void startStream() {
@@ -231,10 +280,12 @@ void startStream() {
 }
 
 void setupMap() {
-  map = new UnfoldingMap(this, 0, 0, width, height, new MapBox.WorldLightProvider());
+  //map.setRectangularPanningRestriction(180,90);
+  map = new UnfoldingMap(this, (-200), 0, displayWidth-200, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
-  //map.setTweening(false);
+  map.setTweening(false);
+  //map.pan(-180.0,-90.0,180.0,90.0);
 }
 
 public void createMarkers(color markerColor, Tweet tweet) {
@@ -247,43 +298,45 @@ public void createMarkers(color markerColor, Tweet tweet) {
     marker.setRadius(10);      
     statusMarkerBuffer.add(marker);
     /*if(userMarker != null){
-      userMarker.getTextOfNearbyTweets();      
-    }*/
+     userMarker.getTextOfNearbyTweets();      
+     }*/
   }
 }
 
 public void mouseClicked() {
-  StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
-  //userMarkerLocation = map.getLocationFromScreenPosition(mouseX, mouseY) = 
-  //userMarker.setLocation(userMarkerLocation);
-  userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
-  userMarker.setLocation(userMarkerLocation);
-  if (hitMarker != null) {
-    // Select current marker 
-    for (Marker marker : statusMarkerManager.getMarkers()) {
-      marker.setSelected(false);
-    }
-    hitMarker.setSelected(true);
-  } else {
-    //control UserMarker
-    userMarkerManager.clearMarkers();
-    userMarkerManager.addMarker(userMarker); 
-    
-    //analyze Text with watson
-    textNearby = userMarker.getTextOfNearbyTweets();
-    
-    Runnable run = new Runnable() {
-      public void run() {
-        analyzeTone(textNearby);
-        analyzeSentiment(textNearby);
+  if (state == 1) {
+    StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
+    //userMarkerLocation = map.getLocationFromScreenPosition(mouseX, mouseY) = 
+    //userMarker.setLocation(userMarkerLocation);
+    userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
+    userMarker.setLocation(userMarkerLocation);
+    if (hitMarker != null) {
+      // Select current marker 
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+        marker.setSelected(false);
       }
-     };
- 
-    new Thread(run).start();
+      hitMarker.setSelected(true);
+    } else {
+      //control UserMarker
+      userMarkerManager.clearMarkers();
+      userMarkerManager.addMarker(userMarker); 
 
-    //Deselect all other markers
-    for (Marker marker : statusMarkerManager.getMarkers()) {
-      marker.setSelected(false);
+      //analyze Text with watson
+      textNearby = userMarker.getTextOfNearbyTweets();
+
+      Runnable run = new Runnable() {
+        public void run() {
+          analyzeTone(textNearby);
+          analyzeSentiment(textNearby);
+        }
+      };
+
+      new Thread(run).start();
+
+      //Deselect all other markers
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+        marker.setSelected(false);
+      }
     }
   }
 }
