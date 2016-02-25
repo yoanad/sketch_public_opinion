@@ -4,9 +4,11 @@ import twitter4j.conf.*;
 import twitter4j.*;
 import twitter4j.auth.*;
 import twitter4j.api.*;
+import wordcram.*;
 
 public class UserMarker extends SimplePointMarker {
   PImage img;
+  
 
 
 
@@ -47,4 +49,14 @@ public class UserMarker extends SimplePointMarker {
     }    
     return nearbyTweets;
   }
+  
+  public void drawToneInformation(){
+    if (tweetTone != null){
+      //ToDo, what to do with Tone Information
+      
+    }
+  }
+  
+
+  
 }

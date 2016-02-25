@@ -18,8 +18,7 @@ public class StatusMarker extends SimplePointMarker{
   public void draw(PGraphics pg, float x, float y){
   this.setRadius(map(tweet.followersCount, 0, 100000, 5, 30) );
     super.draw(pg, x, y);
-    pg.pushStyle();    
-    pg.fill(255,0,0);    
+    pg.pushStyle();          
     if(this.isSelected() == true){        
       pg.fill(0,0,0);
       pg.text(tweet.username, this.getScreenPosition(map).x, this.getScreenPosition(map).y -30, 100, 100);     

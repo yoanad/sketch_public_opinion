@@ -9,6 +9,17 @@ import twitter4j.auth.*;
 import twitter4j.api.*;
 import java.util.*;
 import java.net.URLEncoder;
+//wordcram doesn't work with unfolding
+//import wordcram.*;
+
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.*;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.*;
+import com.ibm.watson.developer_cloud.alchemy.v1.*;
+import com.ibm.watson.developer_cloud.alchemy.v1.model.*;
+import com.google.gson.*;
+import com.squareup.okhttp.*;
+import okio.*;
+
 
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -36,14 +47,22 @@ UserMarker userMarker;
 Location userMarkerLocation;
 int markerAlpha;
 
+//Text of nearby Markers
+String textNearby;
+
 ArrayList<Tweet> tweets = new ArrayList();
 processing.data.JSONArray tweetLocations;
 
 //colors
 color orangeBright, blueTwitter, orangeDark;
 
+//watson
+processing.data.JSONObject tweetTone;
+processing.data.JSONObject tweetSentiment;
+
 
 void setup () {
+  
 
   // JSON
   tweetLocations  = new processing.data.JSONArray();
@@ -54,6 +73,7 @@ void setup () {
 
   //setup canvas
   size(800, 580, P2D);
+  //fullScreen();
   background(0);
 
   //setup default map
@@ -68,6 +88,14 @@ void setup () {
   //colors
   blueTwitter = color(0, 172, 237, 150);
   orangeBright = color(255, 177, 5, 255);
+  
+  //Watson example
+  textNearby = "";
+  processing.data.JSONObject tweetTone= new processing.data.JSONObject();
+  processing.data.JSONObject tweetSentiment= new processing.data.JSONObject();
+  
+ 
+
 }
 
 void draw() {
@@ -75,6 +103,7 @@ void draw() {
   map.draw();
   // Get the position of the img1 scrollbar
   // and convert to a value to display the img1 image 
+  
   for (int i = 0; i < statusMarkerBuffer.size(); i++) {   
     statusMarkerManager.addMarker(statusMarkerBuffer.get(i));
   }
@@ -82,7 +111,34 @@ void draw() {
   for (int i = 0; i < simpleLinesBuffer.size(); i++) {
     map.addMarkers(simpleLinesBuffer.get(i));
   }
-   // TODO: eventually seperate object and draw method for map ->> animation!
+  
+}
+
+//Watson example
+void analyzeTone(String text) {
+  //Tone Analysis
+  ToneAnalyzer service = new ToneAnalyzer(ToneAnalyzer.VERSION_DATE_2016_02_11);
+  //Username und Passwort das Ihr von der Watson Konsole kriegt
+  service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");
+  if (text!= null){
+    ToneAnalysis tone = service.getTone(text);  
+    processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
+    println(tweetTone);
+  }
+}
+
+void analyzeSentiment(String text) {
+  //Sentiment Analysis
+  AlchemyLanguage service = new AlchemyLanguage();
+  //API Key der Alchemy API
+  service.setApiKey("54ec2b46d89ff069c95cd243a4e3ce7dfebfaaaa");
+  if (text != null){
+    HashMap<String, Object> params = new HashMap<String, Object>();
+    params.put(AlchemyLanguage.TEXT, text);
+    DocumentSentiment sentiment =  service.getSentiment(params);
+    processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
+    println(tweetSentiment);
+  }
 }
 
 void startStream() {
@@ -130,9 +186,9 @@ public void createMarkers(color markerColor, Tweet tweet) {
     marker.setStrokeWeight(0);      
     marker.setRadius(10);      
     statusMarkerBuffer.add(marker);
-    if(userMarker != null){
-      userMarker.getTextOfNearbyTweets();
-    }
+    /*if(userMarker != null){
+      userMarker.getTextOfNearbyTweets();      
+    }*/
   }
 }
 
@@ -152,10 +208,19 @@ public void mouseClicked() {
     //control UserMarker
     userMarkerManager.clearMarkers();
     userMarkerManager.addMarker(userMarker); 
+    
+    //analyze Text with watson
+    textNearby = userMarker.getTextOfNearbyTweets();
+    
+    Runnable run = new Runnable() {
+      public void run() {
+        analyzeTone(textNearby);
+        analyzeSentiment(textNearby);
+      }
+     };
+ 
+    new Thread(run).start();
 
-    String textNearby = userMarker.getTextOfNearbyTweets();
-
-    println(textNearby);
     //Deselect all other markers
     for (Marker marker : statusMarkerManager.getMarkers()) {
       marker.setSelected(false);
