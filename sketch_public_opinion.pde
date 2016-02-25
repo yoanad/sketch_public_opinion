@@ -39,6 +39,8 @@ int state = welcomeScreen; //current
 //Styling
 ControlP5 cp5;
 PFont font;
+Button startButton;
+DropdownList settingsDropdown;
 
 //Map Constraints
 Location boundTopLeft = new Location(52.8, 12.6);
@@ -90,9 +92,7 @@ void setup () {
 
   //Styling 
   cp5 = new ControlP5(this);
-  Button startButton = cp5.addButton("Start visualisation");
-  font = createFont("Raleway-Light-48.vlw", 30);
-
+  startButton = cp5.addButton("Start visualisation");
 
   // JSON
   tweetLocations  = new processing.data.JSONArray();
@@ -152,7 +152,23 @@ void draw() {
 }
 
 
+//for dropdown
 
+void controlEvent(ControlEvent theEvent) {
+  // DropdownList is of type ControlGroup.
+  // A controlEvent will be triggered from inside the ControlGroup class.
+  // therefore you need to check the originator of the Event with
+  // if (theEvent.isGroup())
+  // to avoid an error message thrown by controlP5.
+
+  if (theEvent.isGroup()) {
+    // check if the Event was triggered from a ControlGroup
+    println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
+    //runMode = int(theEvent.getGroup().getValue() + 1);
+  } else if (theEvent.isController()) {
+    println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
+  }
+}
 
 
 public void restrictPanning() {
@@ -179,15 +195,15 @@ public void restrictPanning() {
 
 void showWelcomeScreen() {
   background(255);
-  fill(4, 193, 192);
+  fill(blueTwitter);
+  font = createFont("Raleway-Light-48.vlw", 40);
   textFont(font);
   text ("How does public opinion change around the world?", 
     width/2, height/2-100);
   textAlign(CENTER);
   cp5.addButton("Start visualisation")
-    .setPosition(width/2-200, height/2-50).setSize(400, 100);
-  //cp5.getController("Start visualisation").setFont(font);
-  //rect(width/2-200, height/2-50, 400, 100);
+    .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
+    .setColorBackground(blueTwitter);
   fill(4, 193, 192);
   if (mousePressed) {
     if (mouseX > width/2-200 && mouseX < width/2-200+400 && mouseY>height/2-50 && mouseY <height/2-50+100) {
@@ -201,8 +217,8 @@ void showWelcomeScreen() {
 
 void showVisualisationScreen() {
   // Get the position of the img1 scrollbar
-  // and convert to a value to display the img1 image 
-
+  // and convert to a value to display the img1 image
+  drawSettingsMenu();
   for (int i = 0; i < statusMarkerBuffer.size(); i++) {   
     statusMarkerManager.addMarker(statusMarkerBuffer.get(i));
   }
@@ -213,10 +229,32 @@ void showVisualisationScreen() {
   drawMenuRight();
 }
 
+void drawSettingsMenu() {
+  font = createFont("Raleway-Light-48.vlw", 30);
+  //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
+  settingsDropdown = cp5.addDropdownList("Settings")
+    .setPosition(10, 10);
+  settingsDropdown.addItem("Menuitem", 1);
+  settingsDropdown.addItem("Menuitem", 2);
+  settingsDropdown.setValue(2);
+  settingsDropdown.setColorBackground(blueTwitter);
+  this.settingsDropdown.setItemHeight(40);
+
+
+
+
+
+
+  //cp5.addButton("hamburger")
+  //  .setPosition(10, 10)
+  //  .setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
+  //  .updateSize();
+  ////SHOW DROPDOWN
+}
+
 void drawMenuRight() {
-   fill(255);
-   rect(400, 0, 400, displayHeight);
-   //map = new UnfoldingMap(this, (-200), 0, displayWidth-200, displayHeight-10, new MapBox.WorldLightProvider());
+  fill(255);
+  rect(1280, 0, 640, displayHeight);
 }
 
 //Watson example
@@ -225,9 +263,9 @@ void analyzeTone(String text) {
   ToneAnalyzer service = new ToneAnalyzer(ToneAnalyzer.VERSION_DATE_2016_02_11);
   //Username und Passwort das Ihr von der Watson Konsole kriegt
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");   
-   ToneAnalysis tone = service.getTone(text);  
-   processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
-   println(tweetTone);   
+  ToneAnalysis tone = service.getTone(text);  
+  processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
+  println(tweetTone);
 }
 
 void analyzeSentiment(String text) {
@@ -235,15 +273,14 @@ void analyzeSentiment(String text) {
   AlchemyLanguage service = new AlchemyLanguage();
   //API Key der Alchemy API
   service.setApiKey("54ec2b46d89ff069c95cd243a4e3ce7dfebfaaaa");
-  
-  if (text != null){
-   HashMap<String, Object> params = new HashMap<String, Object>();
-   params.put(AlchemyLanguage.TEXT, text);
-   DocumentSentiment sentiment =  service.getSentiment(params);
-   processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
-   println(tweetSentiment);
-   }
 
+  if (text != null) {
+    HashMap<String, Object> params = new HashMap<String, Object>();
+    params.put(AlchemyLanguage.TEXT, text);
+    DocumentSentiment sentiment =  service.getSentiment(params);
+    processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
+    println(tweetSentiment);
+  }
 }
 
 void startStream() {
@@ -306,7 +343,7 @@ public void createMarkers(color markerColor, Tweet tweet) {
 }
 
 public void mousePressed() {
- 
+
   if (state==1) {
     StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
     userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
@@ -325,7 +362,7 @@ public void mousePressed() {
 
       //analyze Text with watson      
       println("textNearby ist: "+textNearby);
-      if ((textNearby !=null)&&(textNearby !="")){
+      if ((textNearby !=null)&&(textNearby !="")) {
         Runnable run = new Runnable() {
           public void run() {
             analyzeTone(textNearby);
@@ -341,125 +378,124 @@ public void mousePressed() {
       }
     }
   }
-  
-  }
+}
 
-  //Check Twitterstatus or if not available TwitterUser for Location
-  public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
-    try {      
-      //println(status.getGeoLocation());
-      //GeoLocation location = status.getGeoLocation();
-      double latitude = location.getLatitude();
-      double longitude= location.getLongitude();
-      locTweet= new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
-    } 
-    catch(NullPointerException ne) {
-      //if there is no Geolocation of tweet available check, if there is further information about the place      
-      if (status.getPlace()!= null) {
-        String googlePlace = URLEncoder.encode(status.getPlace().getFullName());  
-        checkGoogleApi(googlePlace);
-      } else if (status.getUser().getLocation() != null) {
-        String googlePlace = URLEncoder.encode(status.getUser().getLocation());   
-        checkGoogleApi(googlePlace);
-      }
-    }    
-    return locTweet;
-  }
+//Check Twitterstatus or if not available TwitterUser for Location
+public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
+  try {      
+    //println(status.getGeoLocation());
+    //GeoLocation location = status.getGeoLocation();
+    double latitude = location.getLatitude();
+    double longitude= location.getLongitude();
+    locTweet= new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
+  } 
+  catch(NullPointerException ne) {
+    //if there is no Geolocation of tweet available check, if there is further information about the place      
+    if (status.getPlace()!= null) {
+      String googlePlace = URLEncoder.encode(status.getPlace().getFullName());  
+      checkGoogleApi(googlePlace);
+    } else if (status.getUser().getLocation() != null) {
+      String googlePlace = URLEncoder.encode(status.getUser().getLocation());   
+      checkGoogleApi(googlePlace);
+    }
+  }    
+  return locTweet;
+}
 
-  //Look for Geoposition by using Google Search API
+//Look for Geoposition by using Google Search API
 
-  public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
-    try {
-      //println(googlePlace);
+public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
+  try {
+    //println(googlePlace);
 
-      //ANNA
-      processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    //ANNA
+    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
       +googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
 
-      //YOANA 
-      //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
-      //  +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
-      processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
-      processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
-      processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
-      processing.data.JSONObject googleLocation = googleGeometry.getJSONObject("location");
-      double latitude = googleLocation.getDouble("lat");
-      double longitude = googleLocation.getFloat("lng");        
-      locTweet= new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
-    }
-    catch (RuntimeException re) {
-      //if google finds no place according to the user's place information do this
-      println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
-      locTweet= new de.fhpotsdam.unfolding.geo.Location(0, 0);
-    }    
-    return locTweet;
+    //YOANA 
+    //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    //  +googlePlace+"&key=AIzaSyDzCs9jW5Pu3lG5jpD9N-MU8Gwr5iVBXFo");
+    processing.data.JSONArray googleResultsArr = google.getJSONArray("results");
+    processing.data.JSONObject googleComponents = googleResultsArr.getJSONObject(0);
+    processing.data.JSONObject googleGeometry = googleComponents.getJSONObject("geometry");
+    processing.data.JSONObject googleLocation = googleGeometry.getJSONObject("location");
+    double latitude = googleLocation.getDouble("lat");
+    double longitude = googleLocation.getFloat("lng");        
+    locTweet= new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
   }
+  catch (RuntimeException re) {
+    //if google finds no place according to the user's place information do this
+    println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
+    locTweet= new de.fhpotsdam.unfolding.geo.Location(0, 0);
+  }    
+  return locTweet;
+}
 
-  void loadJson() {
-    color markerColor = color(0, 172, 237, 150);
-    println("json");
-    tweetLocations = loadJSONArray("data/data.json");
-    for (int i =0; i < tweetLocations.size(); i++) {
-      processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
-      Tweet jsonTweet = new Tweet(tweetObj);
-      tweets.add(jsonTweet);
-      createMarkers(markerColor, jsonTweet);
-      println(jsonTweet.toString());
-    }
-  }      
+void loadJson() {
+  color markerColor = color(0, 172, 237, 150);
+  println("json");
+  tweetLocations = loadJSONArray("data/data.json");
+  for (int i =0; i < tweetLocations.size(); i++) {
+    processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
+    Tweet jsonTweet = new Tweet(tweetObj);
+    tweets.add(jsonTweet);
+    createMarkers(markerColor, jsonTweet);
+    println(jsonTweet.toString());
+  }
+}      
 
-  // Implementing StatusListener interface
-  StatusListener listener = new StatusListener() {
+// Implementing StatusListener interface
+StatusListener listener = new StatusListener() {
 
-    //@Override
-    public void onStatus(Status status) {
-      if (statusMarkerBuffer.size() < 40) {
-        Tweet tweet =  new Tweet(status);
-        de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
-        tweet.longitude=locTweet.getLon();
-        tweet.latitude=locTweet.getLat();
-        tweets.add(tweet);
-        tweet.addToJson();
+  //@Override
+  public void onStatus(Status status) {
+    if (statusMarkerBuffer.size() < 40) {
+      Tweet tweet =  new Tweet(status);
+      de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
+      tweet.longitude=locTweet.getLon();
+      tweet.latitude=locTweet.getLat();
+      tweets.add(tweet);
+      tweet.addToJson();
 
-        createMarkers(blueTwitter, tweet);
-        //println(locTweet);
-        //for lines must be improved
-        if (status.getRetweetedStatus() != null) {        
-          de.fhpotsdam.unfolding.geo.Location locRetweet =
-            getLocation(status.getRetweetedStatus());          
+      createMarkers(blueTwitter, tweet);
+      //println(locTweet);
+      //for lines must be improved
+      if (status.getRetweetedStatus() != null) {        
+        de.fhpotsdam.unfolding.geo.Location locRetweet =
+          getLocation(status.getRetweetedStatus());          
 
-          if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
-            &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
-            SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-            connectionMarker.setColor(blueTwitter);          
-            //connectionMarker.setStrokeWeight(10);
-            simpleLinesBuffer.add(connectionMarker);
-          }
+        if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
+          &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
+          SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
+          connectionMarker.setColor(blueTwitter);          
+          //connectionMarker.setStrokeWeight(10);
+          simpleLinesBuffer.add(connectionMarker);
         }
       }
     }
+  }
 
-    //@Override
-    public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
-      System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
-    }
+  //@Override
+  public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
+    System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());
+  }
 
-    //@Override
-    public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
-      System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
-    }
-    //@Override
-    public void onScrubGeo(long userId, long upToStatusId) {
-      System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
-    }
+  //@Override
+  public void onTrackLimitationNotice(int numberOfLimitedStatuses) {
+    System.out.println("Got track limitation notice:" + numberOfLimitedStatuses);
+  }
+  //@Override
+  public void onScrubGeo(long userId, long upToStatusId) {
+    System.out.println("Got scrub_geo event userId:" + userId + " upToStatusId:" + upToStatusId);
+  }
 
-    //@Override
-    public void onStallWarning(StallWarning warning) {
-      System.out.println("Got stall warning:" + warning);
-    }
+  //@Override
+  public void onStallWarning(StallWarning warning) {
+    System.out.println("Got stall warning:" + warning);
+  }
 
-    //@Override
-    public void onException(Exception ex) {
-      ex.printStackTrace();
-    }
-  };
+  //@Override
+  public void onException(Exception ex) {
+    ex.printStackTrace();
+  }
+};
