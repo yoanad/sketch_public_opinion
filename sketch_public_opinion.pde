@@ -96,13 +96,13 @@ void draw() {
 }
 
 void showWelcomeScreen() {
-  background(11);
+  background(255);
   fill(244, 3, 3); // red 
   text ("Put a pretty screen here", 210, 313);
-  rect(0, 0, 100, 100);
+  rect(width/2, height/2, 400, 100);
   fill(255);
   if (mousePressed) {
-    if (mouseX>0 && mouseX <0+100 && mouseY>0 && mouseY <0+100) {
+    if (mouseX>width/2 && mouseX <width/2+400 && mouseY>height/2 && mouseY <height/2+100) {
       println("The mouse is pressed and over the button");
       fill(0);
       state = visualisationScreen;
