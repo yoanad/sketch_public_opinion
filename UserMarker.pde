@@ -8,7 +8,7 @@ import wordcram.*;
 
 public class UserMarker extends SimplePointMarker {
   PImage img;
-  
+
 
 
 
@@ -32,31 +32,25 @@ public class UserMarker extends SimplePointMarker {
   }
 
   public String getTextOfNearbyTweets() {   
-    
+
     String nearbyTweets= "";    
     for (Marker marker : statusMarkerManager.getMarkers()) {
       StatusMarker statusMarker = (StatusMarker)marker;
       statusMarker.setColor(blueTwitter);
       de.fhpotsdam.unfolding.geo.Location markerLocation = new de.fhpotsdam.unfolding.geo.Location (statusMarker.tweet.latitude, statusMarker.tweet.longitude);
-      if (markerLocation != null) {
-        Double distance = this.getDistanceTo(markerLocation);
-        if (distance < 3000.0) {          
-          statusMarker.setColor(orangeBright);          
-          nearbyTweets += "";
-          nearbyTweets = statusMarker.tweet.text;
-        }
+      Double distance = this.getDistanceTo(markerLocation);
+      if (distance < 3000.0) {          
+        statusMarker.setColor(orangeBright);          
+        nearbyTweets += "";
+        nearbyTweets = statusMarker.tweet.text;
       }
     }    
     return nearbyTweets;
   }
-  
-  public void drawToneInformation(){
-    if (tweetTone != null){
+
+  public void drawToneInformation() {
+    if (tweetTone != null) {
       //ToDo, what to do with Tone Information
-      
     }
   }
-  
-
-  
 }

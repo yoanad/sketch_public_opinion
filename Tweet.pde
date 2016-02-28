@@ -15,20 +15,21 @@ class Tweet {
     //make the Status object a Tweet
     //tweet = status;
     //println(status.getId());
+    //tweet = new LinkedBlockingQueue<Tweet>();
     try {
       latitude = status.getGeoLocation().getLatitude();
       longitude = status.getGeoLocation().getLongitude();
-    } 
+      followersCount = status.getUser().getFollowersCount();
+      retweetedFrom = status.getRetweetedStatus().getId();
+      isRetweet = status.isRetweet();
+          }
     catch (Exception e) {
-      println("No location");
+      //println("No location");
     }
-    id = status.getId();
-    username = status.getUser().getScreenName();
-    date = hour()+ ";" +minute() + ";" + second();
-    text = status.getText();
-    followersCount = status.getUser().getFollowersCount();
-    retweetedFrom = status.getRetweetedStatus().getId();
-    isRetweet = status.isRetweet();
+      id = status.getId();
+      username = status.getUser().getScreenName();
+      date = hour()+ ";" +minute() + ";" + second();
+      text = status.getText();
   }
 
   Tweet(processing.data.JSONObject tweetObj) {
@@ -39,17 +40,17 @@ class Tweet {
     date  = tweetObj.getString("date");
     text = tweetObj.getString("text");
     followersCount = tweetObj.getInt("followersCount", 1);
-    retweetedFrom = tweetObj.getLong("retweetedFrom");
-    isRetweet = tweetObj.getBoolean("isRetweet");
+    //retweetedFrom = tweetObj.getLong("retweetedFrom");
+    //isRetweet = tweetObj.getBoolean("isRetweet");
   }
 
   String toString() {
     return id + ": " + username;
   }
-  
+
 
   //collects tweet data from stream and saves it in an JSONArray
-  void addToJson() {
+  synchronized void addToJson() {
     processing.data.JSONObject tweets = new processing.data.JSONObject();
     processing.data.JSONArray retweets = new processing.data.JSONArray();
 

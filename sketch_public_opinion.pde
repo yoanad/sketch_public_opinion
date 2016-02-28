@@ -1,4 +1,4 @@
-import de.fhpotsdam.unfolding.*;  //<>// //<>//
+import de.fhpotsdam.unfolding.*;  //<>// //<>// //<>//
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.utils.*;
 import de.fhpotsdam.unfolding.marker.*;
@@ -39,6 +39,8 @@ int state = welcomeScreen; //current
 //Styling
 ControlP5 cp5;
 PFont font;
+PImage startscreenimg;
+PImage twitterBird;
 Button startButton;
 Button button;
 DropdownList settingsDropdown;
@@ -67,6 +69,8 @@ de.fhpotsdam.unfolding.geo.Location locRetweet;
 List <StatusMarker> statusMarkerBuffer;
 List <SimpleLinesMarker> simpleLinesBuffer;
 
+boolean jsonIsLoaded;
+
 //Markers
 MarkerManager<Marker> userMarkerManager;
 MarkerManager<Marker> statusMarkerManager;
@@ -84,11 +88,11 @@ processing.data.JSONArray tweetLocations;
 //colors
 color orangeBright, blueTwitter, orangeDark;
 //color colorAnger, colorDisgust, colorFear, colorJoy, colorSadness;
-color colorAnger = color(255, 177, 5, 255);
-color colorDisgust = color(0, 177, 5, 255);
-color colorFear= color(255, 0, 5, 255);
-color colorJoy = color(255, 177, 2555, 255);
-color colorSadness= color(255, 255, 5, 255);
+color colorAnger = color(231, 76, 60);
+color colorDisgust = color(39, 174, 96);
+color colorFear= color(41, 128, 185);
+color colorJoy = color(241, 196, 15);
+color colorSadness= color(44, 62, 80);
 
 //watson
 processing.data.JSONObject tweetTone= new processing.data.JSONObject();
@@ -103,14 +107,17 @@ Range rangeFear = new Range("Fear", 0.0, colorFear);
 Range rangeJoy = new Range("Joy", 0.0, colorJoy);
 Range rangeSadness = new Range("Sadness", 0.0, colorSadness);
 
+Float angerScore, disgustScore, fearScore, joyScore, sadnessScore;
+
+
 
 
 void setup () {
-  
+
 
   //Styling 
   cp5 = new ControlP5(this);
-  //createButton(blueTwitter,"blabla",14,2,4,4);
+  //createButton(blueTwitter, "blabla", 14, 2, 4, 4);
   //startButton = cp5.addButton("Start visualisation");
 
   // JSON
@@ -123,14 +130,16 @@ void setup () {
 
   //setup canvas
   //fullScreen(P2D, SPAN);
-  size(1920, 1080, P2D);
+  size(1366, 768, P2D);
+  //size(1920, 1080, P2D);
+  //fullScreen();
   background(0);
 
   //setup default map
+
   //loadJson();
   setupMap();
-  //map.setZoomRange(10, 12);
-  //map.zoomAndPanTo(new Location(52.5, 13.4f), 10);
+  jsonIsLoaded= false;
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
   statusMarkerManager = new MarkerManager();
@@ -147,10 +156,19 @@ void setup () {
   ranges.add(rangeFear);
   ranges.add(rangeJoy);
   ranges.add(rangeSadness);
+
+  angerScore= 0.05;
+  disgustScore= 0.05;
+  fearScore = 0.05;
+  joyScore = 0.05;
+  sadnessScore = 0.05;
 }
 
 void draw() {
-
+  map.draw();
+  //drawMenuRight();
+  //showVisualisationScreen();
+/*
   switch (state) {
   case welcomeScreen:
     showWelcomeScreen();
@@ -161,14 +179,16 @@ void draw() {
     //restrictPanning();
     //map.setOffset(0,0);
     map.draw();
+    drawMenuRight();
     showVisualisationScreen();
+    
     break;
 
   default: 
-    println("You just broke the internet");
+    //println("You just broke the internet");
     exit ();
     break;
-  }
+  }*/
 }
 
 
@@ -215,32 +235,33 @@ public void restrictPanning() {
 
 void showWelcomeScreen() {
   background(255);
-  fill(blueTwitter);
-  font = createFont("Raleway-Light-48.vlw", 40);
-  textFont(font);
-  pushStyle();
-  text ("How does public opinion change around the world?", 
-    width/2, height/2-100);
-  textAlign(CENTER);
-  popStyle();
-  //button.Button();
-  //button.
-  //createButton(""width/2-200, height/2-50, 400, 100);
+  startscreenimg = loadImage("startscreen.png");
+  twitterBird = loadImage("twitterBird.png");
+  image (startscreenimg,0,0);
+  //font = createFont("Raleway-Light-48.vlw", 40);
+  //textFont(font);
+  //text ("How does public opinion change around the world?", 
+  //  width/2, height/2-100);
+  //textAlign(CENTER);
+  //button.createButton(width/2-200, height/2-50, 400, 100);
   //rect(width/2-200, height/2-50, 400, 100);
-  
-  //cp5.addButton("Start visualisation")
-   createButton(blueTwitter,"Start visualisation",width/2-200,height/2-50,400,100, 30);
- 
+
+  //cp5.addButton("Start visualisation");
+  image (twitterBird,width/2-200,700);
+  fill(255,0);
+  noStroke();
+  createButton(blueTwitter, "", width/2-200, 700, 400, 200);
+
   //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
   //  .setColorBackground(blueTwitter).loadFont("Raleway-Light", 20);
-  fill(4, 193, 192);
+  //fill(4, 193, 192);
   if (mousePressed) {
-    if (mouseX > width/2-200 && mouseX < width/2-200+400 && mouseY>height/2-50 && mouseY <height/2-50+100) {
-      println("The mouse is pressed and over the button");
+    //if (mouseX > width/2-200 && mouseX < width/2+200 && mouseY>700 && mouseY <900) {
+      //println("The mouse is pressed and over the button");
       fill(0);
       state = visualisationScreen;
-      cp5.remove("Start visualisation");
-    }
+      //cp5.remove("Start visualisation");
+    //}
   }
 }
 
@@ -262,24 +283,32 @@ public void drawSentiments() {
   //Draw Emotion Ranges
 
   for (int i= 0; i<ranges.size(); i++) {    
-    translate(0, 150);
-    ranges.get(i).drawRange(1600, 0, 200, 80);
+    translate(0, 170);
+    ranges.get(i).drawRange(1370, 0, 400, 80);
   }
 
+  rangeAnger.setScore(angerScore);      
+  rangeDisgust.setScore(disgustScore);       
+  rangeFear.setScore(fearScore);
+  rangeJoy.setScore(joyScore);
+  rangeSadness.setScore(sadnessScore);
 
 
 
-  try {
-    if (hmEmotions.get("Anger") != null) {      
-      rangeAnger.setScore(hmEmotions.get("Anger"));      
-      rangeDisgust.setScore(hmEmotions.get("Disgust"));       
-      rangeFear.setScore(hmEmotions.get("Fear"));
-      rangeFear.setScore(hmEmotions.get("Joy"));
-      rangeFear.setScore(hmEmotions.get("Sadness"));
-    }
-  }
-  catch(NullPointerException ne) {
-  }
+
+
+
+  //try {
+  //  if (hmEmotions.get("Anger") != null) {      
+  //    rangeAnger.setScore(hmEmotions.get("Anger"));      
+  //    rangeDisgust.setScore(hmEmotions.get("Disgust"));       
+  //    rangeFear.setScore(hmEmotions.get("Fear"));
+  //    rangeFear.setScore(hmEmotions.get("Joy"));
+  //    rangeFear.setScore(hmEmotions.get("Sadness"));
+  //  }
+  //}
+  //catch(NullPointerException ne) {
+  //}
 }
 
 public void saveSentiments() {
@@ -296,19 +325,22 @@ public void saveSentiments() {
       //println(score);
       if (score != null) {
         hmEmotions.put(name, score);
+        angerScore = hmEmotions.get("Anger");        
+        disgustScore=hmEmotions.get("Disgust");       
+        fearScore = hmEmotions.get("Fear");
+        joyScore = hmEmotions.get("Joy");        
+        sadnessScore=hmEmotions.get("Sadness");
       }
     }
   }
   catch(NullPointerException ne) {
-    println("Array empty");
+    //println("Array empty");
   }
-
-  drawMenuRight();
 }
 
 void drawSettingsMenu() {
   font = createFont("Raleway-Light-48.vlw", 30);
-  //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
+  //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-ed.png"))
   //settingsDropdown = cp5.addDropdownList("Settings")
   //  .setPosition(10, 10);
   //settingsDropdown.addItem("Menuitem", 1);
@@ -316,6 +348,11 @@ void drawSettingsMenu() {
   //settingsDropdown.setValue(2);
   //settingsDropdown.setColorBackground(blueTwitter);
   //this.settingsDropdown.setItemHeight(40);
+
+
+
+
+
 
   //cp5.addButton("hamburger")
   //  .setPosition(10, 10)
@@ -325,9 +362,18 @@ void drawSettingsMenu() {
 }
 
 void drawMenuRight() {
-  fill(255);
-  stroke(153);
+
+  noFill();
+  //rgb(236, 240, 241)
+  stroke(102, 102, 102, 255);
+  strokeWeight(30);
+  rect(0, 0, width, height);
+  fill(102, 102, 102, 255);
   rect(1280, 0, 640, displayHeight);
+  noFill();
+  stroke(102, 102, 102, 255);
+  strokeWeight(2);
+  rect(15, 15, 1250, 1050);
 }
 
 //Watson example
@@ -338,9 +384,8 @@ void analyzeTone(String text) {
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");   
   ToneAnalysis tone = service.getTone(text);  
 
-  processing.data.JSONObject tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
-  println(tweetTone);
-
+  tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
+  //println(tweetTone);
 }
 
 void analyzeSentiment(String text) {
@@ -354,7 +399,7 @@ void analyzeSentiment(String text) {
     params.put(AlchemyLanguage.TEXT, text);
     DocumentSentiment sentiment =  service.getSentiment(params);
     processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
-    println(tweetSentiment);
+    //println(tweetSentiment);
   }
 }
 
@@ -389,9 +434,11 @@ void startStream() {
 
 void setupMap() {
   //map.setRectangularPanningRestriction(180,90);
-  map = new UnfoldingMap(this, (-200), 0, displayWidth-200, displayHeight-10, new MapBox.WorldLightProvider());
+  //map = new UnfoldingMap(this, -200, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
+  map = new UnfoldingMap(this, -100, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
+  //map.setTweening(false);
   //userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(48.1448, 11.558);
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
@@ -414,44 +461,59 @@ public void createMarkers(color markerColor, Tweet tweet) {
      }*/
   }
 }
-  public void mousePressed() {   
-    if (state==1) {
-      StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
-      userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
-      userMarker.setLocation(userMarkerLocation);
-      if (hitMarker != null) {
-        // Select current marker 
-        for (Marker marker : statusMarkerManager.getMarkers()) {
-          marker.setSelected(false);
-        }
-        hitMarker.setSelected(true);
-      } else {
-        //control UserMarker
-        userMarkerManager.clearMarkers();
-        //analyze Text with watson              
-        userMarkerManager.addMarker(userMarker); 
-        textNearby =userMarker.getTextOfNearbyTweets();
 
-        //analyze Text with watson      
-        println("textNearby ist: "+textNearby);
-        if ((textNearby !=null)&&(textNearby !="")) {
-          Runnable run = new Runnable() {
-            public void run() {
-              analyzeTone(textNearby);
-              //analyzeSentiment(textNearby);
-              saveSentiments();
-            }
-          };  
-          new Thread(run).start();
-        }
 
-        //Deselect all other markers
-        for (Marker marker : statusMarkerManager.getMarkers()) {
-          marker.setSelected(false);
-        }
+public void mouseClicked() {   
+  if (mouseButton == RIGHT) {
+    StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
+    userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
+    userMarker.setLocation(userMarkerLocation);
+    if (hitMarker != null) {
+      // Select current marker 
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+        marker.setSelected(false);
+      }
+      hitMarker.setSelected(true);
+    } else {
+      //control UserMarker
+      userMarkerManager.clearMarkers();
+      //analyze Text with watson              
+      userMarkerManager.addMarker(userMarker); 
+      textNearby =userMarker.getTextOfNearbyTweets();
+
+      //analyze Text with watson      
+      //println("textNearby ist: "+textNearby);
+      if ((textNearby !=null)&&(textNearby !="")) {
+        Runnable run = new Runnable() {
+          public void run() {
+            analyzeTone(textNearby);
+            //analyzeSentiment(textNearby);
+            saveSentiments();
+          }
+        };  
+        new Thread(run).start();
+      }
+
+      //Deselect all other markers
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+        marker.setSelected(false);
       }
     }
   }
+  else if (mouseButton == LEFT){
+   
+        StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
+    //userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
+    //userMarker.setLocation(userMarkerLocation);
+    if (hitMarker != null) {
+      // Select current marker 
+      for (Marker marker : statusMarkerManager.getMarkers()) {
+        marker.setSelected(false);
+      }
+      hitMarker.setSelected(true);
+    }
+  }
+}
 
 
 //Check Twitterstatus or if not available TwitterUser for Location
@@ -483,10 +545,13 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {
     //println(googlePlace);
 
 
-    //ANNA
-    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
-      +googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
+    ////ANNA
+    //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+    //  +googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
 
+    //YOANA 2
+    processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
+      +googlePlace+"&key=AIzaSyBFumopf5_GvjL21byO_aNGeXavLpaKk2I");
 
     //YOANA 
     //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
@@ -508,16 +573,23 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {
 }
 
 void loadJson() {
-  color markerColor = color(0, 172, 237, 150);
-  println("json");
-  tweetLocations = loadJSONArray("data/data.json");
-  for (int i =0; i < tweetLocations.size(); i++) {
-    processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
-    Tweet jsonTweet = new Tweet(tweetObj);
-    tweets.add(jsonTweet);
-    createMarkers(markerColor, jsonTweet);
-    println(jsonTweet.toString());
+  try {println("loadjson");
+    tweetLocations = loadJSONArray("data/data.json");
+    for (int i =0; i < tweetLocations.size(); i++) {
+      processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
+      Tweet jsonTweet = new Tweet(tweetObj);
+      tweets.add(jsonTweet);
+      //createMarkers(markerColor, jsonTweet);
+      //println(jsonTweet.toString());
+      jsonIsLoaded=true;
+      
+    }
+     println("json is loaded");
+    
+  }catch (Exception e) {
+   println("jsonempty");
   }
+  
 }      
 
 // Implementing StatusListener interface
@@ -525,7 +597,7 @@ StatusListener listener = new StatusListener() {
 
   //@Override
   public void onStatus(Status status) {
-    if (statusMarkerBuffer.size() < 40) {
+    if (statusMarkerBuffer.size() < 50) {
       Tweet tweet =  new Tweet(status);
       de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
       tweet.longitude=locTweet.getLon();
@@ -537,16 +609,16 @@ StatusListener listener = new StatusListener() {
       //println(locTweet);
       //for lines must be improved
       if (status.getRetweetedStatus() != null) {        
-        de.fhpotsdam.unfolding.geo.Location locRetweet =
-          getLocation(status.getRetweetedStatus());          
+       de.fhpotsdam.unfolding.geo.Location locRetweet =
+         getLocation(status.getRetweetedStatus());          
 
-        if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
-          &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
-          SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-          connectionMarker.setColor(blueTwitter);          
-          //connectionMarker.setStrokeWeight(10);
-          simpleLinesBuffer.add(connectionMarker);
-        }
+       if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
+         &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
+         SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
+         connectionMarker.setColor(blueTwitter);          
+         //connectionMarker.setStrokeWeight(10);
+         simpleLinesBuffer.add(connectionMarker);
+       }
       }
     }
   }
