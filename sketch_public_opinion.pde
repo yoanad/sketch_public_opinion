@@ -116,9 +116,8 @@ void setup () {
 
 
   //Styling 
+  frameRate(15);
   cp5 = new ControlP5(this);
-  //createButton(blueTwitter, "blabla", 14, 2, 4, 4);
-  //startButton = cp5.addButton("Start visualisation");
 
   // JSON
   tweetLocations  = new processing.data.JSONArray();
@@ -130,8 +129,7 @@ void setup () {
 
   //setup canvas
   //fullScreen(P2D, SPAN);
-  size(1366, 768, P2D);
-  //size(1920, 1080, P2D);
+  size(1920, 1080, P2D);
   //fullScreen();
   background(0);
 
@@ -165,10 +163,8 @@ void setup () {
 }
 
 void draw() {
-  map.draw();
-  //drawMenuRight();
-  //showVisualisationScreen();
-/*
+
+
   switch (state) {
   case welcomeScreen:
     showWelcomeScreen();
@@ -181,14 +177,14 @@ void draw() {
     map.draw();
     drawMenuRight();
     showVisualisationScreen();
-    
+
     break;
 
   default: 
     //println("You just broke the internet");
     exit ();
     break;
-  }*/
+  }
 }
 
 
@@ -237,7 +233,7 @@ void showWelcomeScreen() {
   background(255);
   startscreenimg = loadImage("startscreen.png");
   twitterBird = loadImage("twitterBird.png");
-  image (startscreenimg,0,0);
+  image (startscreenimg, 0, 0);
   //font = createFont("Raleway-Light-48.vlw", 40);
   //textFont(font);
   //text ("How does public opinion change around the world?", 
@@ -247,20 +243,18 @@ void showWelcomeScreen() {
   //rect(width/2-200, height/2-50, 400, 100);
 
   //cp5.addButton("Start visualisation");
-  image (twitterBird,width/2-200,700);
-  fill(255,0);
+  image (twitterBird, width/2-200, 700);
+  fill(255, 0);
   noStroke();
-  createButton(blueTwitter, "", width/2-200, 700, 400, 200);
-
   //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
   //  .setColorBackground(blueTwitter).loadFont("Raleway-Light", 20);
   //fill(4, 193, 192);
   if (mousePressed) {
     //if (mouseX > width/2-200 && mouseX < width/2+200 && mouseY>700 && mouseY <900) {
-      //println("The mouse is pressed and over the button");
-      fill(0);
-      state = visualisationScreen;
-      //cp5.remove("Start visualisation");
+    //println("The mouse is pressed and over the button");
+    fill(0);
+    state = visualisationScreen;
+    //cp5.remove("Start visualisation");
     //}
   }
 }
@@ -349,11 +343,6 @@ void drawSettingsMenu() {
   //settingsDropdown.setColorBackground(blueTwitter);
   //this.settingsDropdown.setItemHeight(40);
 
-
-
-
-
-
   //cp5.addButton("hamburger")
   //  .setPosition(10, 10)
   //  .setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
@@ -374,6 +363,9 @@ void drawMenuRight() {
   stroke(102, 102, 102, 255);
   strokeWeight(2);
   rect(15, 15, 1250, 1050);
+  //fill(255);
+  //stroke(153);
+  //rect(1280, 0, 640, displayHeight);
 }
 
 //Watson example
@@ -398,7 +390,7 @@ void analyzeSentiment(String text) {
     HashMap<String, Object> params = new HashMap<String, Object>();
     params.put(AlchemyLanguage.TEXT, text);
     DocumentSentiment sentiment =  service.getSentiment(params);
-    processing.data.JSONObject tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
+    tweetSentiment = processing.data.JSONObject.parse(sentiment.toString());
     //println(tweetSentiment);
   }
 }
@@ -434,11 +426,9 @@ void startStream() {
 
 void setupMap() {
   //map.setRectangularPanningRestriction(180,90);
-  //map = new UnfoldingMap(this, -200, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
-  map = new UnfoldingMap(this, -100, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
+  map = new UnfoldingMap(this, -200, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
-  //map.setTweening(false);
   //userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(48.1448, 11.558);
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
@@ -447,7 +437,7 @@ void setupMap() {
   map.addMarkerManager(statusMarkerManager);
 }
 
-public void createMarkers(color markerColor, Tweet tweet) {
+synchronized void createMarkers(color markerColor, Tweet tweet) {
   if ((tweet.latitude != 0)&&(tweet.longitude !=0)) {    
     de.fhpotsdam.unfolding.geo.Location loc =
       new de.fhpotsdam.unfolding.geo.Location(tweet.latitude, tweet.longitude);
@@ -487,7 +477,7 @@ public void mouseClicked() {
         Runnable run = new Runnable() {
           public void run() {
             analyzeTone(textNearby);
-            //analyzeSentiment(textNearby);
+            //analyzeSentiment(textNearby);o
             saveSentiments();
           }
         };  
@@ -499,10 +489,9 @@ public void mouseClicked() {
         marker.setSelected(false);
       }
     }
-  }
-  else if (mouseButton == LEFT){
-   
-        StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
+  } else if (mouseButton == LEFT) {
+
+    StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
     //userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
     //userMarker.setLocation(userMarkerLocation);
     if (hitMarker != null) {
@@ -517,7 +506,7 @@ public void mouseClicked() {
 
 
 //Check Twitterstatus or if not available TwitterUser for Location
-public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
+synchronized public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
   try {      
     //println(status.getGeoLocation());
     //GeoLocation location = status.getGeoLocation();
@@ -566,15 +555,16 @@ public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {
   }
   catch (RuntimeException re) {
     //if google finds no place according to the user's place information do this
-    println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
+    //println("no Geoinformation found, if there are no markers check if Google Api Key is blocked");
     locTweet= new de.fhpotsdam.unfolding.geo.Location(0, 0);
   }    
   return locTweet;
 }
 
 void loadJson() {
-  try {println("loadjson");
-    tweetLocations = loadJSONArray("data/data.json");
+  try {
+    println("loadjson");
+    processing.data.JSONArray tweetLocations = loadJSONArray("data/data.json");
     for (int i =0; i < tweetLocations.size(); i++) {
       processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
       Tweet jsonTweet = new Tweet(tweetObj);
@@ -582,22 +572,19 @@ void loadJson() {
       //createMarkers(markerColor, jsonTweet);
       //println(jsonTweet.toString());
       jsonIsLoaded=true;
-      
     }
-     println("json is loaded");
-    
-  }catch (Exception e) {
-   println("jsonempty");
+    println("json is loaded");
   }
-  
+  catch (Exception e) {
+    println("jsonempty");
+  }
 }      
 
 // Implementing StatusListener interface
 StatusListener listener = new StatusListener() {
-
   //@Override
   public void onStatus(Status status) {
-    if (statusMarkerBuffer.size() < 50) {
+    if (statusMarkerBuffer.size() < 150) {
       Tweet tweet =  new Tweet(status);
       de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
       tweet.longitude=locTweet.getLon();
@@ -609,16 +596,16 @@ StatusListener listener = new StatusListener() {
       //println(locTweet);
       //for lines must be improved
       if (status.getRetweetedStatus() != null) {        
-       de.fhpotsdam.unfolding.geo.Location locRetweet =
-         getLocation(status.getRetweetedStatus());          
+        de.fhpotsdam.unfolding.geo.Location locRetweet =
+          getLocation(status.getRetweetedStatus());          
 
-       if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
-         &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
-         SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-         connectionMarker.setColor(blueTwitter);          
-         //connectionMarker.setStrokeWeight(10);
-         simpleLinesBuffer.add(connectionMarker);
-       }
+        if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
+          &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
+          SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
+          connectionMarker.setColor(blueTwitter);          
+          //connectionMarker.setStrokeWeight(10);
+          simpleLinesBuffer.add(connectionMarker);
+        }
       }
     }
   }
