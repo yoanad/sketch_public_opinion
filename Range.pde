@@ -19,7 +19,7 @@ class Range {
 
 
 
-  public void drawRange(int x, int y, int w, int h) {
+  public void drawRange(float x, float y, float w, float h) {
 
     //Text
     font = createFont("Raleway-Light-48.vlw", 40);

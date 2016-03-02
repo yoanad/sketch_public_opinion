@@ -116,7 +116,7 @@ void setup () {
 
 
   //Styling 
-  frameRate(15);
+  frameRate(30);
   cp5 = new ControlP5(this);
 
   // JSON
@@ -128,8 +128,8 @@ void setup () {
 
 
   //setup canvas
-  //fullScreen(P2D, SPAN);
-  size(1920, 1080, P2D);
+  fullScreen(P2D, SPAN);
+  //size(1920, 1080, P2D);
   //fullScreen();
   background(0);
 
@@ -233,6 +233,7 @@ void showWelcomeScreen() {
   background(255);
   startscreenimg = loadImage("startscreen.png");
   twitterBird = loadImage("twitterBird.png");
+  startscreenimg.resize(width, height);
   image (startscreenimg, 0, 0);
   //font = createFont("Raleway-Light-48.vlw", 40);
   //textFont(font);
@@ -243,7 +244,7 @@ void showWelcomeScreen() {
   //rect(width/2-200, height/2-50, 400, 100);
 
   //cp5.addButton("Start visualisation");
-  image (twitterBird, width/2-200, 700);
+  image (twitterBird, width/2-200, height*0.65);
   fill(255, 0);
   noStroke();
   //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
@@ -275,10 +276,10 @@ void showVisualisationScreen() {
 
 public void drawSentiments() {
   //Draw Emotion Ranges
-
+  
   for (int i= 0; i<ranges.size(); i++) {    
-    translate(0, 170);
-    ranges.get(i).drawRange(1370, 0, 400, 80);
+    translate(0, height*0.165);
+    ranges.get(i).drawRange(width*0.7, 0, width*0.25, height*0.07);
   }
 
   rangeAnger.setScore(angerScore);      
@@ -333,7 +334,7 @@ public void saveSentiments() {
 }
 
 void drawSettingsMenu() {
-  font = createFont("Raleway-Light-48.vlw", 30);
+  font = createFont("Raleway-Light-48.vlw", 28);
   //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-ed.png"))
   //settingsDropdown = cp5.addDropdownList("Settings")
   //  .setPosition(10, 10);
@@ -351,7 +352,7 @@ void drawSettingsMenu() {
 }
 
 void drawMenuRight() {
-
+/*
   noFill();
   //rgb(236, 240, 241)
   stroke(102, 102, 102, 255);
@@ -363,6 +364,21 @@ void drawMenuRight() {
   stroke(102, 102, 102, 255);
   strokeWeight(2);
   rect(15, 15, 1250, 1050);
+  //fill(255);
+  //stroke(153);
+  //rect(1280, 0, 640, displayHeight);
+  */
+    noFill();
+  //rgb(236, 240, 241)
+  stroke(102, 102, 102, 255);
+  strokeWeight(30);
+  rect(0, 0, width, height);
+  fill(102, 102, 102, 255);
+  rect(width*0.66, 0, width*0.33, displayHeight);
+  noFill();
+  stroke(102, 102, 102, 255);
+  strokeWeight(2);
+  rect(15, 15, width*0.66, height-30);
   //fill(255);
   //stroke(153);
   //rect(1280, 0, 640, displayHeight);
@@ -426,7 +442,7 @@ void startStream() {
 
 void setupMap() {
   //map.setRectangularPanningRestriction(180,90);
-  map = new UnfoldingMap(this, -200, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
+  map = new UnfoldingMap(this, -100, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);
   //userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(48.1448, 11.558);
