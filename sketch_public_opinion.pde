@@ -271,8 +271,8 @@ void drawMenuRight() {
 void analyzeTone(String text) {
   //Tone Analysis
   ToneAnalyzer service = new ToneAnalyzer(ToneAnalyzer.VERSION_DATE_2016_02_11);
-  //Username und Passwort das Ihr von der Watson Konsole kriegt
-  service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");   
+  //Username und Passwort 
+  service.setUsernameAndPassword("7ef9d1f6-2c28-4c2f-a647-e63fd94dfe73", "cHdtrVlPGJnL");   
   ToneAnalysis tone = service.getTone(text);  
   tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
 }
