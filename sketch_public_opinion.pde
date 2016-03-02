@@ -1,4 +1,4 @@
-import de.fhpotsdam.unfolding.*;  //<>// //<>// //<>//
+import de.fhpotsdam.unfolding.*;  //<>// //<>//
 import de.fhpotsdam.unfolding.geo.*;
 import de.fhpotsdam.unfolding.utils.*;
 import de.fhpotsdam.unfolding.marker.*;
@@ -16,8 +16,7 @@ import twitter4j.api.*;
 import java.util.*;
 import java.net.URLEncoder;
 
-//wordcram doesn't work with unfolding
-//import wordcram.*;
+
 
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.*;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.*;
@@ -26,8 +25,6 @@ import com.ibm.watson.developer_cloud.alchemy.v1.model.*;
 import com.google.gson.*;
 import com.squareup.okhttp.*;
 import okio.*;
-
-import controlP5.*;
 
 
 //States
@@ -48,8 +45,7 @@ DropdownList settingsDropdown;
 //Map Constraints
 Location boundTopLeft = new Location(52.8, 12.6);
 Location boundBottomRight = new Location(52.0, 14.5);
-//Location boundTopLeft = new Location(-180, -90);
-//Location boundBottomRight = new Location(180, 90);
+
 
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -63,7 +59,7 @@ GeoLocation location;
 UnfoldingMap map;
 de.fhpotsdam.unfolding.geo.Location locTweet;
 de.fhpotsdam.unfolding.geo.Location locRetweet;
-//double latitude, longitude; 
+
 
 //Buffer for Markers
 List <StatusMarker> statusMarkerBuffer;
@@ -87,7 +83,6 @@ processing.data.JSONArray tweetLocations;
 
 //colors
 color orangeBright, blueTwitter, orangeDark;
-//color colorAnger, colorDisgust, colorFear, colorJoy, colorSadness;
 color colorAnger = color(231, 76, 60);
 color colorDisgust = color(39, 174, 96);
 color colorFear= color(41, 128, 185);
@@ -106,7 +101,6 @@ Range rangeDisgust = new Range("Disgust", 0.0, colorDisgust);
 Range rangeFear = new Range("Fear", 0.0, colorFear);
 Range rangeJoy = new Range("Joy", 0.0, colorJoy);
 Range rangeSadness = new Range("Sadness", 0.0, colorSadness);
-
 Float angerScore, disgustScore, fearScore, joyScore, sadnessScore;
 
 
@@ -129,8 +123,6 @@ void setup () {
 
   //setup canvas
   fullScreen(P2D, SPAN);
-  //size(1920, 1080, P2D);
-  //fullScreen();
   background(0);
 
   //setup default map
@@ -172,8 +164,6 @@ void draw() {
 
   case visualisationScreen:
     background(255);
-    //restrictPanning();
-    //map.setOffset(0,0);
     map.draw();
     drawMenuRight();
     showVisualisationScreen();
@@ -188,23 +178,7 @@ void draw() {
 }
 
 
-//for dropdown
 
-void controlEvent(ControlEvent theEvent) {
-  // DropdownList is of type ControlGroup.
-  // A controlEvent will be triggered from inside the ControlGroup class.
-  // therefore you need to check the originator of the Event with
-  // if (theEvent.isGroup())
-  // to avoid an error message thrown by controlP5.
-
-  if (theEvent.isGroup()) {
-    // check if the Event was triggered from a ControlGroup
-    //println("event from group : "+theEvent.getGroup().getValue()+" from "+theEvent.getGroup());
-    //runMode = int(theEvent.getGroup().getValue() + 1);
-  } else if (theEvent.isController()) {
-    //println("event from controller : "+theEvent.getController().getValue()+" from "+theEvent.getController());
-  }
-}
 
 
 public void restrictPanning() {
@@ -235,35 +209,17 @@ void showWelcomeScreen() {
   twitterBird = loadImage("twitterBird.png");
   startscreenimg.resize(width, height);
   image (startscreenimg, 0, 0);
-  //font = createFont("Raleway-Light-48.vlw", 40);
-  //textFont(font);
-  //text ("How does public opinion change around the world?", 
-  //  width/2, height/2-100);
-  //textAlign(CENTER);
-  //button.createButton(width/2-200, height/2-50, 400, 100);
-  //rect(width/2-200, height/2-50, 400, 100);
-
-  //cp5.addButton("Start visualisation");
   image (twitterBird, width/2-200, height*0.65);
   fill(255, 0);
   noStroke();
-  //  .setPosition(width/2-200, height/2-50).setSize(400, 100).setColorValue(blueTwitter)
-  //  .setColorBackground(blueTwitter).loadFont("Raleway-Light", 20);
-  //fill(4, 193, 192);
-  if (mousePressed) {
-    //if (mouseX > width/2-200 && mouseX < width/2+200 && mouseY>700 && mouseY <900) {
-    //println("The mouse is pressed and over the button");
+
+  if (key==ENTER) {    
     fill(0);
     state = visualisationScreen;
-    //cp5.remove("Start visualisation");
-    //}
   }
 }
 
-void showVisualisationScreen() {
-  // Get the position of the img1 scrollbar
-  // and convert to a value to display the img1 image
-  drawSettingsMenu();
+void showVisualisationScreen() { 
   for (int i = 0; i < statusMarkerBuffer.size(); i++) {   
     statusMarkerManager.addMarker(statusMarkerBuffer.get(i));
   }
@@ -276,7 +232,7 @@ void showVisualisationScreen() {
 
 public void drawSentiments() {
   //Draw Emotion Ranges
-  
+
   for (int i= 0; i<ranges.size(); i++) {    
     translate(0, height*0.165);
     ranges.get(i).drawRange(width*0.7, 0, width*0.25, height*0.07);
@@ -287,28 +243,10 @@ public void drawSentiments() {
   rangeFear.setScore(fearScore);
   rangeJoy.setScore(joyScore);
   rangeSadness.setScore(sadnessScore);
-
-
-
-
-
-
-  //try {
-  //  if (hmEmotions.get("Anger") != null) {      
-  //    rangeAnger.setScore(hmEmotions.get("Anger"));      
-  //    rangeDisgust.setScore(hmEmotions.get("Disgust"));       
-  //    rangeFear.setScore(hmEmotions.get("Fear"));
-  //    rangeFear.setScore(hmEmotions.get("Joy"));
-  //    rangeFear.setScore(hmEmotions.get("Sadness"));
-  //  }
-  //}
-  //catch(NullPointerException ne) {
-  //}
 }
 
 public void saveSentiments() {
 
-  //Range range1 = new Range("hallo", 0.7, blueTwitter);
   //read JSON Object
   try {
     processing.data.JSONArray emotions = tweetTone.getJSONArray("tone_categories").getJSONObject(0).getJSONArray("tones");
@@ -333,43 +271,10 @@ public void saveSentiments() {
   }
 }
 
-void drawSettingsMenu() {
-  font = createFont("Raleway-Light-48.vlw", 28);
-  //.setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-ed.png"))
-  //settingsDropdown = cp5.addDropdownList("Settings")
-  //  .setPosition(10, 10);
-  //settingsDropdown.addItem("Menuitem", 1);
-  //settingsDropdown.addItem("Menuitem", 2);
-  //settingsDropdown.setValue(2);
-  //settingsDropdown.setColorBackground(blueTwitter);
-  //this.settingsDropdown.setItemHeight(40);
 
-  //cp5.addButton("hamburger")
-  //  .setPosition(10, 10)
-  //  .setImages(loadImage("BURGERICON.png"), loadImage("BURGERICON-pressed.png"), loadImage("BURGERICON-pressed.png"))
-  //  .updateSize();
-  ////SHOW DROPDOWN
-}
 
 void drawMenuRight() {
-/*
   noFill();
-  //rgb(236, 240, 241)
-  stroke(102, 102, 102, 255);
-  strokeWeight(30);
-  rect(0, 0, width, height);
-  fill(102, 102, 102, 255);
-  rect(1280, 0, 640, displayHeight);
-  noFill();
-  stroke(102, 102, 102, 255);
-  strokeWeight(2);
-  rect(15, 15, 1250, 1050);
-  //fill(255);
-  //stroke(153);
-  //rect(1280, 0, 640, displayHeight);
-  */
-    noFill();
-  //rgb(236, 240, 241)
   stroke(102, 102, 102, 255);
   strokeWeight(30);
   rect(0, 0, width, height);
@@ -379,23 +284,19 @@ void drawMenuRight() {
   stroke(102, 102, 102, 255);
   strokeWeight(2);
   rect(15, 15, width*0.66, height-30);
-  //fill(255);
-  //stroke(153);
-  //rect(1280, 0, 640, displayHeight);
 }
 
-//Watson example
+//Watson 
+//this function checks the emotional tone
 void analyzeTone(String text) {
   //Tone Analysis
   ToneAnalyzer service = new ToneAnalyzer(ToneAnalyzer.VERSION_DATE_2016_02_11);
   //Username und Passwort das Ihr von der Watson Konsole kriegt
   service.setUsernameAndPassword("03ada96e-b23e-4ab1-933b-09aaec64d2c6", "kXKi86V6rraa");   
   ToneAnalysis tone = service.getTone(text);  
-
   tweetTone = processing.data.JSONObject.parse(tone.getDocumentTone().toString());
-  //println(tweetTone);
 }
-
+//this function analyses if the content of the tweet is positive or negativ
 void analyzeSentiment(String text) {
   //Sentiment Analysis
   AlchemyLanguage service = new AlchemyLanguage();
@@ -431,21 +332,19 @@ void startStream() {
     ).getInstance();      
   //listen to tweets in the stream 
   twitterStream.addListener(listener);
+  //keyword "syria" translated to different languages
   String keywords[] = {"syria", "سوريا", 
     "syrien", "siria", "Сирия", "Tanjung", "Syrie", "सीरिया", "叙利亚", "シリア"};
   //filter.language(new String[]{"en"});
   filter.track(keywords);
   twitterStream.filter(filter);
-
   println("started stream");
 }
 
-void setupMap() {
-  //map.setRectangularPanningRestriction(180,90);
+void setupMap() {  
   map = new UnfoldingMap(this, -100, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
-  MapUtils.createDefaultEventDispatcher(this, map);
-  //userMarkerLocation = new de.fhpotsdam.unfolding.geo.Location(48.1448, 11.558);
+  MapUtils.createDefaultEventDispatcher(this, map);  
   userMarker = new UserMarker(userMarkerLocation);
   userMarkerManager = new MarkerManager();
   statusMarkerManager = new MarkerManager();
@@ -461,14 +360,11 @@ synchronized void createMarkers(color markerColor, Tweet tweet) {
     marker.setColor(markerColor);
     marker.setStrokeWeight(0);      
     marker.setRadius(10);      
-    statusMarkerBuffer.add(marker);
-    /*if(userMarker != null){
-     userMarker.getTextOfNearbyTweets();      
-     }*/
+    statusMarkerBuffer.add(marker);    
   }
 }
 
-
+//this function sets the UserMarker on the map
 public void mouseClicked() {   
   if (mouseButton == RIGHT) {
     StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
@@ -508,8 +404,6 @@ public void mouseClicked() {
   } else if (mouseButton == LEFT) {
 
     StatusMarker hitMarker = (StatusMarker)statusMarkerManager.getFirstHitMarker(mouseX, mouseY);
-    //userMarkerLocation =  map.getLocationFromScreenPosition(mouseX, mouseY);
-    //userMarker.setLocation(userMarkerLocation);
     if (hitMarker != null) {
       // Select current marker 
       for (Marker marker : statusMarkerManager.getMarkers()) {
@@ -524,8 +418,6 @@ public void mouseClicked() {
 //Check Twitterstatus or if not available TwitterUser for Location
 synchronized public de.fhpotsdam.unfolding.geo.Location getLocation(Status status) {
   try {      
-    //println(status.getGeoLocation());
-    //GeoLocation location = status.getGeoLocation();
     double latitude = location.getLatitude();
     double longitude= location.getLongitude();
     locTweet= new de.fhpotsdam.unfolding.geo.Location(latitude, longitude);
@@ -547,9 +439,7 @@ synchronized public de.fhpotsdam.unfolding.geo.Location getLocation(Status statu
 
 public de.fhpotsdam.unfolding.geo.Location checkGoogleApi(String googlePlace) {    
   try {
-    //println(googlePlace);
-
-
+    //different keys im google api limit is reached
     ////ANNA
     //processing.data.JSONObject google = loadJSONObject("https://maps.googleapis.com/maps/api/geocode/json?address="
     //  +googlePlace+"&key=AIzaSyCGsHm4Drt5aRV3NcRiiTbQaEg1i3l7R0I");
@@ -585,7 +475,6 @@ void loadJson() {
       processing.data.JSONObject tweetObj = tweetLocations.getJSONObject(i);
       Tweet jsonTweet = new Tweet(tweetObj);
       tweets.add(jsonTweet);
-      //createMarkers(markerColor, jsonTweet);
       //println(jsonTweet.toString());
       jsonIsLoaded=true;
     }
@@ -600,6 +489,7 @@ void loadJson() {
 StatusListener listener = new StatusListener() {
   //@Override
   public void onStatus(Status status) {
+    //limit is set to 150 tweets, if limit is to high google api limit is reached very quickly
     if (statusMarkerBuffer.size() < 150) {
       Tweet tweet =  new Tweet(status);
       de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
@@ -609,8 +499,7 @@ StatusListener listener = new StatusListener() {
       tweet.addToJson();
 
       createMarkers(blueTwitter, tweet);
-      //println(locTweet);
-      //for lines must be improved
+      //println(locTweet);      
       if (status.getRetweetedStatus() != null) {        
         de.fhpotsdam.unfolding.geo.Location locRetweet =
           getLocation(status.getRetweetedStatus());          
@@ -618,8 +507,7 @@ StatusListener listener = new StatusListener() {
         if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
           &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
           SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-          connectionMarker.setColor(blueTwitter);          
-          //connectionMarker.setStrokeWeight(10);
+          connectionMarker.setColor(blueTwitter);                
           simpleLinesBuffer.add(connectionMarker);
         }
       }

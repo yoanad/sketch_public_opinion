@@ -14,10 +14,6 @@ class Range {
     textColorBright = color(211, 211, 211);
   }
 
-  public void draw() {
-  }
-
-
 
   public void drawRange(float x, float y, float w, float h) {
 
