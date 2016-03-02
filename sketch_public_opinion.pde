@@ -15,8 +15,8 @@ import twitter4j.auth.*;
 import twitter4j.api.*;
 import java.util.*;
 import java.net.URLEncoder;
-
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.*;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.*;
@@ -26,7 +26,6 @@ import com.google.gson.*;
 import com.squareup.okhttp.*;
 import okio.*;
 
-
 //States
 
 final int welcomeScreen = 0;
@@ -34,18 +33,15 @@ final int visualisationScreen = 1;
 int state = welcomeScreen; //current
 
 //Styling
-ControlP5 cp5;
 PFont font;
 PImage startscreenimg;
 PImage twitterBird;
 Button startButton;
-Button button;
 DropdownList settingsDropdown;
 
 //Map Constraints
 Location boundTopLeft = new Location(52.8, 12.6);
 Location boundBottomRight = new Location(52.0, 14.5);
-
 
 //Twitter Objects
 ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -59,7 +55,6 @@ GeoLocation location;
 UnfoldingMap map;
 de.fhpotsdam.unfolding.geo.Location locTweet;
 de.fhpotsdam.unfolding.geo.Location locRetweet;
-
 
 //Buffer for Markers
 List <StatusMarker> statusMarkerBuffer;
@@ -104,22 +99,16 @@ Range rangeSadness = new Range("Sadness", 0.0, colorSadness);
 Float angerScore, disgustScore, fearScore, joyScore, sadnessScore;
 
 
+ExecutorService executor=Executors.newFixedThreadPool(10);
 
 
 void setup () {
-
-
-  //Styling 
-  frameRate(30);
-  cp5 = new ControlP5(this);
-
   // JSON
-  tweetLocations  = new processing.data.JSONArray();
+  //tweetLocations  = new processing.data.JSONArray(); //for offline tweets
   startStream();
 
   statusMarkerBuffer = new ArrayList <StatusMarker>() ;
   simpleLinesBuffer = new ArrayList<SimpleLinesMarker>();
-
 
   //setup canvas
   fullScreen(P2D, SPAN);
@@ -135,10 +124,10 @@ void setup () {
   statusMarkerManager = new MarkerManager();
   map.addMarkerManager(userMarkerManager);
   map.addMarkerManager(statusMarkerManager);
+
   //colors
   blueTwitter = color(0, 172, 237, 150);
   orangeBright = color(255, 177, 5, 255);
-
 
   //Ranges
   ranges.add(rangeAnger);
@@ -156,7 +145,6 @@ void setup () {
 
 void draw() {
 
-
   switch (state) {
   case welcomeScreen:
     showWelcomeScreen();
@@ -167,7 +155,6 @@ void draw() {
     map.draw();
     drawMenuRight();
     showVisualisationScreen();
-
     break;
 
   default: 
@@ -176,10 +163,6 @@ void draw() {
     break;
   }
 }
-
-
-
-
 
 public void restrictPanning() {
   Location mapTopLeft = map.getTopLeftBorder();
@@ -202,7 +185,6 @@ public void restrictPanning() {
   }
 }
 
-
 void showWelcomeScreen() {
   background(255);
   startscreenimg = loadImage("startscreen.png");
@@ -211,9 +193,8 @@ void showWelcomeScreen() {
   image (startscreenimg, 0, 0);
   image (twitterBird, width/2-200, height*0.65);
   fill(255, 0);
-  noStroke();
-
-  if (key==ENTER) {    
+  noStroke();  
+  if (key == ENTER) {    
     fill(0);
     state = visualisationScreen;
   }
@@ -226,7 +207,8 @@ void showVisualisationScreen() {
 
   for (int i = 0; i < simpleLinesBuffer.size(); i++) {
     map.addMarkers(simpleLinesBuffer.get(i));
-  }  
+  }
+  //shutdownproperly
   drawSentiments();
 }
 
@@ -270,8 +252,6 @@ public void saveSentiments() {
     //println("Array empty");
   }
 }
-
-
 
 void drawMenuRight() {
   noFill();
@@ -341,7 +321,7 @@ void startStream() {
   println("started stream");
 }
 
-void setupMap() {  
+void setupMap() {
   map = new UnfoldingMap(this, -100, 0, displayWidth-400, displayHeight-10, new MapBox.WorldLightProvider());
   //default map
   MapUtils.createDefaultEventDispatcher(this, map);  
@@ -360,7 +340,7 @@ synchronized void createMarkers(color markerColor, Tweet tweet) {
     marker.setColor(markerColor);
     marker.setStrokeWeight(0);      
     marker.setRadius(10);      
-    statusMarkerBuffer.add(marker);    
+    statusMarkerBuffer.add(marker);
   }
 }
 
@@ -489,31 +469,35 @@ void loadJson() {
 StatusListener listener = new StatusListener() {
   //@Override
   public void onStatus(Status status) {
-    //limit is set to 150 tweets, if limit is to high google api limit is reached very quickly
-    if (statusMarkerBuffer.size() < 150) {
-      Tweet tweet =  new Tweet(status);
-      de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
-      tweet.longitude=locTweet.getLon();
-      tweet.latitude=locTweet.getLat();
-      tweets.add(tweet);
-      tweet.addToJson();
+    try {
+      //limit is set to 150 tweets, if limit is to high google api limit is reached very quickly
+      if (statusMarkerBuffer.size() < 150) {
+        Tweet tweet =  new Tweet(status);
+        de.fhpotsdam.unfolding.geo.Location locTweet = getLocation(status);
+        tweet.longitude=locTweet.getLon();
+        tweet.latitude=locTweet.getLat();
+        tweets.add(tweet);
+        //tweet.addToJson(); // not needed for current live implementation
 
-      createMarkers(blueTwitter, tweet);
-      //println(locTweet);      
-      if (status.getRetweetedStatus() != null) {        
-        de.fhpotsdam.unfolding.geo.Location locRetweet =
-          getLocation(status.getRetweetedStatus());          
+        createMarkers(blueTwitter, tweet);
+        //println(locTweet);      
+        if (status.getRetweetedStatus() != null) {        
+          de.fhpotsdam.unfolding.geo.Location locRetweet =
+            getLocation(status.getRetweetedStatus());          
 
-        if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
-          &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
-          SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
-          connectionMarker.setColor(blueTwitter);                
-          simpleLinesBuffer.add(connectionMarker);
+          if ((locTweet.getLat() != 0)&&(locTweet.getLon() !=0)
+            &&(locRetweet.getLat() !=0)&&(locRetweet.getLon() != 0)) {
+            SimpleLinesMarker connectionMarker = new SimpleLinesMarker(locTweet, locRetweet);
+            connectionMarker.setColor(blueTwitter);                
+            simpleLinesBuffer.add(connectionMarker);
+          }
         }
       }
     }
-  }
-
+    catch(Exception e) {
+      //println("Change the twitter key");
+    }
+  } 
   //@Override
   public void onDeletionNotice(StatusDeletionNotice statusDeletionNotice) {
     System.out.println("Got a status deletion notice id:" + statusDeletionNotice.getStatusId());

@@ -1,3 +1,4 @@
+//to be used be used for future advancements
 class CustomButton {
   color bcolor;
   int bheight;
@@ -6,7 +7,6 @@ class CustomButton {
   int ypos;
   String text;
   int fontsize;
-
 
   CustomButton(color bcolor, String text, int xpos, int ypos, int bwidth, int bheight, int fontsize) {
     this.bcolor = bcolor;
